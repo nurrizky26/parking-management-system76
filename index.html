@@ -1,548 +1,341 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parking Management System</title>
+    <title>Aircraft Parking System</title>
+    
+    <!-- PANGGIL LIBRARY SUPABASE RESMI VIA CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);           
+        /* CSS UNTUK TAMPILAN INTERFACE AIRCRAFT PARKING SYSTEM */
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #0f172a; 
+            color: #f8fafc; 
         }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: #1e293b; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); 
+        }
+        h1 { font-size: 1.8rem; color: #38bdf8; margin: 0 0 5px 0; }
+        h2 { font-size: 1.4rem; color: #94a3b8; margin: 0 0 15px 0; border-bottom: 2px solid #334155; padding-bottom: 10px; }
+        
+        .status-bar { 
+            font-size: 0.85rem; 
+            color: #cbd5e1; 
+            margin-bottom: 25px; 
+            background: #334155; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+        }
+        .status-time { font-weight: bold; color: #4ade80; }
 
-        .header {
-            text-align: center;
-            padding: none;
-            background-color: rgba(0, 0, 0, 0.6);
-            width: 100%;
-            box-sizing: border-box;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* PANEL KONTROL FORM INPUT */
+        .control-panel { 
+            background: #0f172a; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #334155; 
+            margin-bottom: 30px; 
         }
+        .panel-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #f1f5f9; }
+        
+        .form-row { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 20px; 
+        }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: #94a3b8; }
+        
+        select { 
+            padding: 10px; 
+            background: #1e293b; 
+            color: #f8fafc; 
+            border: 1px solid #475569; 
+            border-radius: 6px; 
+            font-size: 0.95rem; 
+            outline: none; 
+            cursor: pointer; 
+        }
+        select:focus { border-color: #38bdf8; }
+        
+        .btn-update { 
+            background: #0284c7; 
+            color: white; 
+            border: none; 
+            padding: 12px 25px; 
+            font-weight: bold; 
+            font-size: 0.95rem; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: background 0.2s; 
+        }
+        .btn-update:hover { background: #0369a1; }
 
-        .title-container {
-            flex: 1;
+        /* GRID INDIKATOR PARKIR PESAWAT */
+        .parking-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 20px; 
+            margin-top: 15px; 
         }
-
-        .timeupdate {
-            position: fixed; 
-            border-radius: 10%;           
-            bottom: 200px;
-            right: 70px;            
-            display: flex;
-            flex-direction: column;            
+        .parking-slot { 
+            background: #0f172a; 
+            border: 2px dashed #475569; 
+            border-radius: 8px; 
+            padding: 20px 10px; 
+            text-align: center; 
+            min-height: 110px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            transition: all 0.3s ease; 
         }
-
-        .timestamp {
-            display: flex;     
-            text-shadow: none;      
-            color: rgb(0, 0, 0);
-            font-size: 13px; 
-            font-weight: bold;           
-            
+        .parking-slot.occupied { 
+            background: #1e3a8a; 
+            border: 2px solid #3b82f6; 
+            box-shadow: 0 0 10px rgba(59,130,246,0.3); 
         }
-
-        .control-panel {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            z-index: 100;
-        }        
-
-        .main-button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }        
-
-        .main-button:hover {
-            background-color: #2980b9;
-            transform: scale(1.1);
+        
+        .slot-name { font-weight: bold; font-size: 1.1rem; color: #f1f5f9; }
+        .badge { 
+            display: inline-block; 
+            padding: 3px 8px; 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            border-radius: 4px; 
+            margin-top: 6px; 
         }
-
-        .button-container {
-            position: absolute;
-            bottom: 50px;
-            right: 0;
-            display: none;
-            flex-wrap: wrap;
-            gap: 6px;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 8px;
-            width: 180px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .button-container.visible {
-            display: flex;
-        }
-
-        .image-button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            width: 50px;
-            transition: all 0.2s ease;
-        }
-
-        .image-button:hover {
-            background-color: #2980b9;
-        }
-
-        .eraser-button {
-            background-color: #e74c3c;
-        }
-
-        .eraser-button.active {
-            background-color: #c0392b;
-            box-shadow: 0 0 0 2px white;
-        }
-
-        .images-container {
-            position: absolute;
-            top: 60px;
-            left: 0;
-            right: 0;
-            bottom: 60px;
-            overflow: hidden;
-        }
-
-        .draggable-image {
-            position: absolute;
-            cursor: move;
-            width: 10%;
-            height: auto;
-            max-width: 48px;
-            max-height: 48px;
-            z-index: 10;
-            transition: transform 0.1s;
-            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
-        }
-
-        .draggable-image:hover {
-            transform: scale(1.1);
-            z-index: 20;
-        }
-
-        .status-indicator {
-            position: fixed;
-            bottom: 10px;
-            right: 150px;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-        }
-
-        .text-element {
-            position: absolute;
-            font-weight: bold;
-            font-size: 12px;
-            color: black;           
-            text-align: center;
-            cursor: pointer;
-            text-transform: uppercase;
-            z-index: 15;
-            text-shadow: 1px 1px 0 #fff, 
-                -1px -1px 0 #fff, 
-                1px -1px 0 #fff, 
-                -1px 1px 0 #fff,
-                4px 4px 8px rgba(255,255,255,0.3);
-        }
-
-        .text-input {
-            width: 100px;
-            padding: 4px;
-            border-radius: 4px;
-            border: none;
-            margin-top: 3px;
-            text-transform: uppercase;
-        }
-
-        .highlight-container {
-            display: none; 
-            position: fixed; 
-            top: 395px;
-            right: 377px;
-            width: 532px; 
-            max-height: 530px; 
-            overflow-y: auto; 
-            background-color: #2f6486;
-            padding: 5px;
-            border-radius: 8px;
-            z-index: 200; 
-        }
-                
-        .text-area {
-            width: 700px;
-            height: 12px;
-            margin-bottom: 5px;
-            border-radius: 4px;
-            border: none;
-            padding: 4px;
-        }
-
-        .update-button {
-            background-color: #3a98d6;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
-            cursor: pointer;
-        }
-
-        .update-button:hover {
-            background-color: #44b3fd;
-        }
-        .highlight-button:hover {
-            background-color: #44b3fd;
-        }
+        .badge-airline { background: #ef4444; color: white; }
+        .badge-type { background: #eab308; color: #0f172a; }
+        .status-text { font-size: 0.8rem; margin-top: 8px; color: #64748b; }
+        .status-text.live { color: #60a5fa; }
     </style>
 </head>
-<body style="background-image: url('backgroundparking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
-    <div class="header">
-        <div class="title-container">
-            <h2 style="margin: 0; font-size: 18px;">Aircraft Parking System</h2>            
-        </div>       
-    </div>
+<body>
 
-    <div class="timeupdate">
-        <div class="timestamp" id="timestamp"> Last Updated: Not yet modified </div>
-    </div>    
-
-    <div class="highlight-container" id="highlightContainer">
-        <textarea class="text-area" id="highlightInput" placeholder="Input text here, then Enter Or Click Update..." rows="4" style="resize: none;"></textarea>
-        <button class="update-button" id="updateHighlightButton">Update</button>
-        <div class="highlight-text" id="highlightDisplay" style="color: rgb(255, 255, 255); font-weight: bold; font-size: 14px; text-align: left; margin-top: 10px;"></div>
-    </div>
-
-    <div class="images-container" id="imagesContainer"></div>
+<div class="container">
+    <h1>Parking Management System</h1>
+    <h2>Aircraft Parking System</h2>
     
+    <div class="status-bar">
+        Status Sinkronisasi Cloud: <span id="lastUpdated" class="status-time">Memuat data cloud...</span>
+    </div>
+
+    <!-- PANEL INPUT PENGATURAN MODE PARKIR -->
     <div class="control-panel">
-        <button class="main-button" id="toggleButtons">+</button>        
-        <div class="button-container" id="buttonContainer">
-            <button class="image-button" onclick="addImage('GA.png')" title="General Aviation">GA</button>
-            <button class="image-button" onclick="addImage('QG.png')" title="Quick Ground">QG</button>
-            <button class="image-button" onclick="addImage('NGA.png')" title="Non-GA Aircraft">NGA</button>
-            <button class="image-button" onclick="addImage('MILITARY.png')" title="Military">MIL</button>
-            <button class="image-button" onclick="addImage('jacking.png')" title="General Aviation">Jack</button>
-            <button class="image-button" onclick="addImage('taildock.png')" title="General Aviation">Tail</button>
-            <button class="image-button" onclick="addImage('fuselagedock.png')" title="General Aviation">Fuse</button>
-            <button class="image-button" onclick="addImage('bothdock.png')" title="General Aviation">Both</button>
-            <button class="image-button eraser-button" id="eraserButton" onclick="toggleEraser()" title="Click to erase images">Erase</button>
-        </div>
-    </div>    
-    
-    <div class="status-indicator" id="statusIndicator"> Add Or Edit Mode </div>    
+        <div class="panel-title">Add Or Edit Mode</div>
+        <form id="parkingForm">
+            <div class="form-row">
+                <!-- Pilihan Slot -->
+                <div class="form-group">
+                    <label for="slotSelect">Pilih Nomor Slot (Bay):</label>
+                    <select id="slotSelect" required>
+                        <option value="1">Slot 01</option>
+                        <option value="2">Slot 02</option>
+                        <option value="3">Slot 03</option>
+                        <option value="4">Slot 04</option>
+                        <option value="5">Slot 05</option>
+                        <option value="6">Slot 06</option>
+                    </select>
+                </div>
 
-    <script>
-        const addedImages = [];
-        const container = document.getElementById('imagesContainer');
-        const toggleButton = document.getElementById('toggleButtons');
-        const buttonContainer = document.getElementById('buttonContainer');
-        const eraserButton = document.getElementById('eraserButton');
-        const statusIndicator = document.getElementById('statusIndicator');
-        const timestampElement = document.getElementById('timestamp');
-        const highlightDisplay = document.getElementById('highlightDisplay');
-        const highlightInput = document.getElementById('highlightInput');
-        const highlightContainer = document.getElementById('highlightContainer');
-        let eraserMode = false;
-        let currentDraggedImage = null;
+                <!-- Pilihan Maskapai (Airline) & Opsi Erase -->
+                <div class="form-group">
+                    <label for="airlineSelect">Maskapai / Opsi:</label>
+                    <select id="airlineSelect" required>
+                        <option value="GA">GA</option>
+                        <option value="QG">QG</option>
+                        <option value="NGA">NGA</option>
+                        <option value="MIL">MIL</option>
+                        <option value="Erase">Erase (Kosongkan Slot)</option>
+                    </select>
+                </div>
 
-        // Function to update the timestamp
-        function updateTimestamp() {
-            const now = new Date();
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const dayName = days[now.getDay()];
-            const date = String(now.getDate()).padStart(2, '0');
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const year = now.getFullYear();
-            timestampElement.textContent = `${dayName}, ${date}/${month}/${year}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                <!-- Pilihan Bagian Parkir (Parking Type) -->
+                <div class="form-group" id="parkingTypeGroup">
+                    <label for="typeSelect">Jenis Parkir (Parking Type):</label>
+                    <select id="typeSelect">
+                        <option value="Jack">Jack</option>
+                        <option value="Tail">Tail</option>
+                        <option value="Fuse">Fuse</option>
+                        <option value="Both">Both</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-update">Update</button>
+        </form>
+    </div>
+
+    <!-- AREA LIVE MONITORING DASHBOARD -->
+    <div class="panel-title" style="margin-bottom: 10px;">Live Display Overview</div>
+    <div class="parking-grid" id="parkingGrid">
+        <!-- Struktur elemen grid dimuat otomatis dari Supabase -->
+    </div>
+</div>
+
+<script>
+    // =========================================================================
+    // KONEKSI UTAMA KE SUPABASE
+    // Silakan ganti kredensial di bawah dengan URL & Anon Key dari project Supabase Anda
+    // =========================================================================
+    const SUPABASE_URL = "https://vmhxqjaphzpmyeszvlao.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_aXbq9WihrfTM968QFScX7w_V1m-LGZb";
+    const supabase = Supabase.createClient("https://vmhxqjaphzpmyeszvlao.supabase.co", "sb_publishable_aXbq9WihrfTM968QFScX7w_V1m-LGZb");
+
+    const form = document.getElementById('parkingForm');
+    const airlineSelect = document.getElementById('airlineSelect');
+    const parkingTypeGroup = document.getElementById('parkingTypeGroup');
+    const parkingGrid = document.getElementById('parkingGrid');
+    const lastUpdatedSpan = document.getElementById('lastUpdated');
+
+    // Sembunyikan dropdown tipe komponen parkir jika user memilih aksi 'Erase'
+    airlineSelect.addEventListener('change', function() {
+        if (this.value === 'Erase') {
+            parkingTypeGroup.style.display = 'none';
+        } else {
+            parkingTypeGroup.style.display = 'flex';
         }
+    });
 
-        // Save the current state to local storage
-        function saveToLocalStorage() {
-            const state = addedImages.map(img => ({
-                src: img.src,
-                left: img.style.left,
-                top: img.style.top,
-                text: img.textElement ? img.textElement.textContent : '', 
-                transform: img.style.transform 
-            }));
-            localStorage.setItem('parkingSystemState', JSON.stringify(state));
-        }
+    // =========================================================================
+    // FUNGSI 1: MEMBACA DATA DARI DATABASE CLOUD (READ/SELECT)
+    // =========================================================================
+    async function fetchAndRenderParking() {
+        try {
+            // Ambil seluruh baris data dari tabel 'aircraft_parking'
+            let { data: slotsData, error } = await supabase
+                .from('aircraft_parking')
+                .select('*')
+                .order('slot_number', { ascending: true });
 
-        // Load the state from local storage
-        function loadFromLocalStorage() {
-            const state = JSON.parse(localStorage.getItem('parkingSystemState'));
-            if (state) {
-                state.forEach(item => {
-                    const img = document.createElement('img');
-                    img.src = item.src;
-                    img.className = 'draggable-image';
-                    img.style.left = item.left;
-                    img.style.top = item.top;
-                    img.style.transform = item.transform; 
-                    makeDraggable(img);
-                    container.appendChild(img);
-                    addedImages.push(img);
-                    if (item.text) {
-                        addTextOverImage(item.text, img);
-                    }
-                });
+            if (error) throw error;
+
+            // Kosongkan visualisasi kotak parkir lama
+            parkingGrid.innerHTML = "";
+
+            // Menghasilkan visualisasi untuk 6 slot parkir
+            for (let i = 1; i <= 6; i++) {
+                // Cari data di database yang nomor slotnya cocok dengan urutan perulangan
+                const dbSlot = slotsData ? slotsData.find(s => parseInt(s.slot_number) === i) : null;
+                
+                const slotDiv = document.createElement('div');
+                slotDiv.className = 'parking-slot';
+                
+                if (dbSlot && dbSlot.status === 'occupied') {
+                    // Jika database mencatat slot sedang terisi
+                    slotDiv.classList.add('occupied');
+                    slotDiv.innerHTML = `
+                        <div class="slot-name">Slot 0${i}</div>
+                        <span class="badge badge-airline">${dbSlot.airline}</span>
+                        <span class="badge badge-type">${dbSlot.parking_type}</span>
+                        <div class="status-text live">Occupied</div>
+                    `;
+                } else {
+                    // Jika database kosong / tidak mencatat data slot ini
+                    slotDiv.innerHTML = `
+                        <div class="slot-name" style="color: #475569;">Slot 0${i}</div>
+                        <div class="status-text" style="margin-top: 15px;">Empty</div>
+                    `;
+                }
+                parkingGrid.appendChild(slotDiv);
             }
+
+            // Tampilkan informasi waktu pengambilan data cloud sukses
+            const waktuSekarang = new Date();
+            lastUpdatedSpan.innerText = "Terhubung - " + waktuSekarang.toLocaleTimeString('id-ID');
+
+        } catch (error) {
+            console.error("Gagal menyinkronkan status data:", error.message);
+            lastUpdatedSpan.innerText = "Error sinkronisasi database.";
+            lastUpdatedSpan.style.color = "#ef4444";
         }
+    }
 
-        // Toggle button container visibility
-        toggleButton.addEventListener('click', function() {
-            buttonContainer.classList.toggle('visible');
-            toggleButton.textContent = buttonContainer.classList.contains('visible') ? '×' : '+';
-        });
-
+    // =========================================================================
+    // FUNGSI 2: MENYIMPAN / MENGAPUS KE DATABASE CLOUD (INSERT / UPDATE / DELETE)
+    // =========================================================================
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
         
+        const targetSlot = document.getElementById('slotSelect').value;
+        const targetAirline = airlineSelect.value;
+        const targetType = document.getElementById('typeSelect').value;
 
-        function addImage(src) {
-            const img = document.createElement('img');
-            img.src = src;
-            img.className = 'draggable-image';
+        try {
+            // Cek terlebih dahulu apakah nomor slot yang dituju sudah tersimpan di database
+            const { data: existingRow } = await supabase
+                .from('aircraft_parking')
+                .select('id')
+                .eq('slot_number', targetSlot)
+                .maybeSingle();
 
-            // Position in center of available space
-            const containerRect = container.getBoundingClientRect();
-            const x = (containerRect.width - img.clientWidth) / 2; 
-            const y = (containerRect.height - img.clientHeight) / 2; // 
-            img.style.left = `${x}px`;
-            img.style.top = `${y}px`;
-            makeDraggable(img);
-            container.appendChild(img);
-            addedImages.push(img);
-
-            // Create a text input for specific images only
-            if (src !== 'jacking.png' && src !== 'taildock.png' && src !== 'fuselagedock.png' && src !== 'bothdock.png') {
-                const textInput = document.createElement('input');
-                textInput.type = 'text';
-                textInput.placeholder = 'Enter text here';
-                textInput.className = 'text-input';
-                textInput.style.position = 'absolute';
-                textInput.style.left = `${x}px`;
-                textInput.style.top = `${y + img.clientHeight + 5}px`; 
-
-                // Store the text input in the image element
-                img.textInput = textInput; 
-
-                // Add event listener to save text on click
-                textInput.addEventListener('keypress', function(event) {
-                    if (event.key === 'Enter') {
-                        addTextOverImage(textInput.value, img);
-                        container.removeChild(textInput); 
-                        saveToLocalStorage(); 
-                        updateTimestamp(); 
-                    }
-                });
-                container.appendChild(textInput);
-            }
-
-            // Hide buttons after selection and update timestamp
-            buttonContainer.classList.remove('visible');
-            toggleButton.textContent = '+';
-            updateTimestamp(); 
-            saveToLocalStorage(); 
-        }
-
-        function addTextOverImage(text, img) {
-            const textElement = document.createElement('div');
-            textElement.textContent = text;
-            textElement.className = 'text-element';
-            textElement.style.left = `${img.style.left}`;
-            textElement.style.top = `${img.style.top}`; 
-
-            // Adjust the text position to be centered over the image
-            const imgRect = img.getBoundingClientRect();
-            const textWidth = textElement.offsetWidth;
-            const textHeight = textElement.offsetHeight;
-            textElement.style.left = `${parseFloat(img.style.left) + (imgRect.width - textWidth) / 2}px`;
-            textElement.style.top = `${parseFloat(img.style.top) + (imgRect.height - textHeight) / 2}px`;
-
-            // Make the text element editable on click
-            textElement.addEventListener('click', function() {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.value = textElement.textContent;
-                input.className = 'text-input';
-                input.style.position = 'absolute';
-                input.style.left = textElement.style.left;
-                input.style.top = textElement.style.top;
-
-                // Save the new text on Enter
-                input.addEventListener('keypress', function(event) {
-                    if (event.key === 'Enter') {
-                        textElement.textContent = input.value; 
-                        container.appendChild(textElement); 
-                        container.removeChild(input); 
-                        saveToLocalStorage();
-                        updateTimestamp();
-                    }
-                });
-                container.appendChild(input);
-                input.focus(); 
-                container.removeChild(textElement);
-            });
-            container.appendChild(textElement);
-            img.textElement = textElement; 
-        }
-
-        function toggleEraser() {
-            eraserMode = !eraserMode;
-            eraserButton.classList.toggle('active', eraserMode);
-            if (eraserMode) {
-                statusIndicator.textContent = "Erase Mode (Click Image to delete)";
-                container.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23e74c3c\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z\"></path><line x1=\"18\" y1=\"9\" x2=\"12\" y2=\"15\"></line><line x1=\"12\" y1=\"9\" x2=\"18\" y2=\"15\"></line></svg>') 12 12, not-allowed";
+            if (targetAirline === 'Erase') {
+                // OPERASI HAPUS (DELETE): Jika user memilih opsi Erase
+                if (existingRow) {
+                    const { error } = await supabase
+                        .from('aircraft_parking')
+                        .delete()
+                        .eq('slot_number', targetSlot);
+                    if (error) throw error;
+                }
+                alert(`Data Slot 0${targetSlot} berhasil dibersihkan dari cloud.`);
             } else {
-                statusIndicator.textContent = "Add Or Edit Mode";
-                container.style.cursor = "";
-            }
-            updateTimestamp();
-        }
-
-        function makeDraggable(element) {
-            element.onmousedown = function(e) {
-                if (eraserMode) {
-                    // In erase mode, clicking removes the image
-                    if (confirm("Delete this image?")) {
-                        container.removeChild(element);
-                        const index = addedImages.indexOf(element);
-                        if (index > -1) {
-                            addedImages.splice(index, 1);
-                        }
-                        updateTimestamp(); 
-                        saveToLocalStorage(); 
-                    }
-                    return;
+                // OPERASI SIMPAN DATA MASKAPAI:
+                if (existingRow) {
+                    // JIKA DATA SUDAH ADA -> Lakukan Update
+                    const { error } = await supabase
+                        .from('aircraft_parking')
+                        .update({
+                            airline: targetAirline,
+                            parking_type: targetType,
+                            status: 'occupied'
+                        })
+                        .eq('slot_number', targetSlot);
+                    if (error) throw error;
+                } else {
+                    // JIKA DATA BELUM ADA -> Lakukan Insert Baru
+                    const { error } = await supabase
+                        .from('aircraft_parking')
+                        .insert([
+                            {
+                                slot_number: targetSlot,
+                                airline: targetAirline,
+                                parking_type: targetType,
+                                status: 'occupied'
+                            }
+                        ]);
+                    if (error) throw error;
                 }
-
-                // Normal drag mode
-                e = e || window.event;
-                e.preventDefault();
-                element.style.zIndex = '100';
-                currentDraggedImage = element;
-                const startX = e.clientX - element.getBoundingClientRect().left;
-                const startY = e.clientY - element.getBoundingClientRect().top;
-
-                function moveImage(e) {
-                    e.preventDefault();
-                    const containerRect = container.getBoundingClientRect();
-                    let x = e.clientX - containerRect.left - startX;
-                    let y = e.clientY - containerRect.top - startY;
-
-                    // Boundary checks
-                    x = Math.max(0, Math.min(x, containerRect.width - element.clientWidth));
-                    y = Math.max(0, Math.min(y, containerRect.height - element.clientHeight));
-                    element.style.left = `${x}px`;
-                    element.style.top = `${y}px`;
-
-                    // Update the position of the text element if it exists
-                    if (element.textElement) {
-                        element.textElement.style.left = `${x}px`;
-                        element.textElement.style.top = `${y}px `;
-                    }
-                }
-
-                function stopDragging() {
-                    document.onmouseup = null;
-                    document.onmousemove = null;
-                    currentDraggedImage = null;
-                    saveToLocalStorage(); 
-                    updateTimestamp(); 
-                }
-
-                document.onmousemove = moveImage;
-                document.onmouseup = stopDragging;
-            };
-
-            // Add double-click event for rotation
-            element.ondblclick = function() {
-                let currentRotation = element.rotation || 0; 
-                currentRotation += 90; 
-                element.style.transform = `rotate(${currentRotation}deg)`; 
-                element.rotation = currentRotation; 
-            };
-        }
-
-        // Load state on page load
-        window.onload = function() {
-            loadFromLocalStorage();
-            loadHighlightFromLocalStorage(); 
-            updateTimestamp(); 
-        };
-
-        // Load highlight text from local storage if needed
-        function loadHighlightFromLocalStorage() {
-            const highlightText = localStorage.getItem('highlightText');
-            if (highlightText) {
-                highlightDisplay.innerHTML = highlightText.replace(/\n/g, '<br>');
+                alert(`Data Slot 0${targetSlot} berhasil disimpan ke cloud.`);
             }
+
+            // Kembalikan form ke keadaan awal dan muat ulang grafis dashboard
+            form.reset();
+            parkingTypeGroup.style.display = 'flex';
+            fetchAndRenderParking();
+
+        } catch (error) {
+            alert("Operasi penyimpanan gagal: " + error.message);
+            console.error("Detail teknis error:", error);
         }
+    });
 
-        // Save highlight text to local storage
-        function saveHighlightToLocalStorage(text) {
-            localStorage.setItem('highlightText', text);
-        }
+    // Pemicu otomatis untuk menarik data cloud pertama kali saat halaman web dimuat browser
+    document.addEventListener("DOMContentLoaded", fetchAndRenderParking);
+</script>
 
-        // Update highlight text on button click
-        document.getElementById('updateHighlightButton').addEventListener('click', function() {
-            const highlightText = highlightInput.value;
-            highlightDisplay.innerHTML = highlightText.replace(/\n/g, '<br>'); 
-            highlightInput.value = ''; 
-
-            // Position the highlight text below the input
-            const inputRect = highlightInput.getBoundingClientRect();
-            highlightDisplay.style.left = `${inputRect.left}px`;
-            highlightDisplay.style.top = `${inputRect.bottom + window.scrollY}px`; 
-
-            saveHighlightToLocalStorage(highlightText); 
-            updateTimestamp(); 
-        });
-
-        // Add event listener for Enter key press
-        highlightInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                const highlightText = highlightInput.value;
-                highlightDisplay.innerHTML = highlightText.replace(/\n/g, '<br>'); 
-                highlightInput.value = ''; 
-
-                // Position the highlight text below the input
-                const inputRect = highlightInput.getBoundingClientRect();
-                highlightDisplay.style.left = `${inputRect.left}px`;
-                highlightDisplay.style.top = `${inputRect.bottom + window.scrollY}px`; 
-
-                saveHighlightToLocalStorage(highlightText); 
-                updateTimestamp();
-            }
-        });
-
-    </script>
 </body>
 </html>
