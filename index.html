@@ -261,7 +261,7 @@
         // INISIALISASI SUPABASE CLOUD
         const SUPABASE_URL = "https://vmhxqjaphzpmyeszvlao.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aXbq9WihrfTM968QFScX7w_V1m-LGZb";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const addedImages = [];
         const container = document.getElementById('imagesContainer');
