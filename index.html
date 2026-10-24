@@ -193,7 +193,7 @@
     // =========================================================================
     const SUPABASE_URL = "https://vmhxqjaphzpmyeszvlao.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_aXbq9WihrfTM968QFScX7w_V1m-LGZb";
-    const supabase = Supabase.createClient("https://vmhxqjaphzpmyeszvlao.supabase.co", "sb_publishable_aXbq9WihrfTM968QFScX7w_V1m-LGZb");
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const form = document.getElementById('parkingForm');
     const airlineSelect = document.getElementById('airlineSelect');
