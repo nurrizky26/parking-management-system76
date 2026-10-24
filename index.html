@@ -300,7 +300,7 @@
                     transform: img.style.transform 
                 }));
 
-                const { error } = await supabaseClient
+                const { error } = await supabase
                     .from('parking_state')
                     .upsert({ id: 1, layout_data: state });
 
@@ -313,7 +313,7 @@
         // Memuat data state tata letak gambar dari Supabase
         async function loadFromSupabase() {
             try {
-                const { data, error } = await supabaseClient
+                const { data, error } = await supabase
                     .from('parking_state')
                     .select('layout_data')
                     .eq('id', 1)
@@ -530,7 +530,7 @@
         // Memuat highlight text dari Supabase
         async function loadHighlightFromSupabase() {
             try {
-                const { data, error } = await supabaseClient
+                const { data, error } = await supabase
                     .from('parking_highlight')
                     .select('highlight_text')
                     .eq('id', 1)
@@ -548,7 +548,7 @@
         // Menyimpan highlight text ke Supabase
         async function saveHighlightToSupabase(text) {
             try {
-                const { error } = await supabaseClient
+                const { error } = await supabase
                     .from('parking_highlight')
                     .upsert({ id: 1, highlight_text: text });
 
