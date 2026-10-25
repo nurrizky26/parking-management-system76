@@ -151,7 +151,7 @@
         .draggable-image {
             position: absolute;
             cursor: move;
-            width: 3,5%; 
+            width: 3.5%; 
             min-width: 25px;
             height: auto;
             z-index: 10;
@@ -194,6 +194,23 @@
             /* Samakan posisi form input dengan teks statis */
             transform: translate(15%, -130%); 
         }
+
+        /* --- CATATAN KECIL DI BAWAH --- */
+        .footer-note {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 1px 1px 3px black;
+            z-index: 100;
+            pointer-events: none; /* Agar tidak memblokir klik di sekitarnya */
+            text-align: center;
+            width: 100%;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -224,6 +241,11 @@
             <button class="image-button eraser-button" id="eraserButton" onclick="toggleEraser()">🗑️ Erase Mode</button>
         </div>
     </div>    
+
+    <!-- CATATAN KECIL -->
+    <div class="footer-note">
+        *SETELAH UPDATE PARKING LAKUKAN RELOAD PAGE, UNTUK MEMASTIKAN PARKING SUDAH SESUAI
+    </div>
 
     <script>
         // INISIALISASI SUPABASE
