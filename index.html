@@ -17,7 +17,7 @@
             color: white;
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
             background-image: url('backgroundparking.png');
-            background-size: 100% 100%; /* Memaksa background full screen di device manapun */
+            background-size: 100% 100%; 
             background-position: center;
             background-repeat: no-repeat;
         }
@@ -49,9 +49,6 @@
             z-index: 5;
         }
 
-        /* --- POSISI UI MELAYANG --- */
-        
-        /* Posisi tepat di atas area NCC di gambar background */
         .timeupdate {
             position: absolute; 
             top: 45%;
@@ -73,13 +70,14 @@
         .status-indicator {
             position: absolute;
             bottom: 20px;
-            right: 80px; /* Di sebelah tombol tambah */
-            background-color: rgba(0, 0, 0, 0.6);
+            right: 90px;
+            background-color: #7f8c8d; /* Warna default terkunci */
             padding: 10px 15px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
             z-index: 100;
+            transition: background-color 0.3s;
         }
 
         .control-panel {
@@ -89,6 +87,7 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            gap: 10px;
             z-index: 100;
         }        
 
@@ -109,14 +108,22 @@
         }        
 
         .main-button:hover {
-            background-color: #d35400;
             transform: scale(1.1);
+        }
+
+        #lockUnlockBtn {
+            background-color: #c0392b; /* Merah untuk Terkunci */
+            font-size: 20px;
+        }
+
+        #toggleButtons {
+            display: none; /* Disembunyikan saat terkunci */
         }
 
         .button-container {
             display: none;
             position: absolute;
-            bottom: 60px;
+            bottom: 110px; /* Disesuaikan karena ada dua tombol bulat sekarang */
             right: 0;
             background-color: rgba(30, 30, 30, 0.95);
             padding: 12px;
@@ -147,22 +154,24 @@
         .eraser-button { background-color: #e74c3c; flex: 1 1 100%; }
         .eraser-button.active { background-color: #c0392b; box-shadow: inset 0 0 5px #000; border: 1px solid #fff; }
 
-        /* --- SETTING PESAWAT --- */
         .draggable-image {
             position: absolute;
-            cursor: move;
             width: 3.5%; 
             min-width: 25px;
             height: auto;
             z-index: 10;
             transition: transform 0.1s;
             filter: drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.6));
-            /* Menggunakan CSS Variable --rot untuk rotasi yang akurat */
             transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); 
+            /* Kursor default diset biasa, berubah jadi move hanya kalau unlock */
+            cursor: default; 
         }
 
-        .draggable-image:hover {
-            /* Menjaga rotasi tetap ada saat di-hover dan menambahkan efek scale */
+        .draggable-image.editable {
+            cursor: move;
+        }
+
+        .draggable-image.editable:hover {
             transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) scale(1.15) !important;
             z-index: 20;
         }
@@ -173,13 +182,15 @@
             font-size: clamp(9px, 1vw, 13px);
             color: #000;            
             text-align: center;
-            cursor: pointer;
             text-transform: uppercase;
             z-index: 15;
             text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 2px 2px 4px rgba(0,0,0,0.5);
-            
-            /* Menggeser posisi teks ke arah KANAN ATAS dari titik kordinat pesawat */
             transform: translate(15%, -130%); 
+            cursor: default;
+        }
+        
+        .text-element.editable {
+            cursor: pointer;
         }
 
         .text-input {
@@ -190,8 +201,6 @@
             text-transform: uppercase;
             font-size: 12px;
             text-align: center;
-            
-            /* Samakan posisi form input dengan teks statis */
             transform: translate(15%, -130%); 
         }
 
@@ -201,12 +210,12 @@
             bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
-            color: rgba(255, 255, 255, 0.8);
-            text-shadow: 1px 1px 3px black;
+            color: #cc0000; 
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9), -1px -1px 3px rgba(255, 255, 255, 0.9);
             z-index: 100;
-            pointer-events: none; /* Agar tidak memblokir klik di sekitarnya */
+            pointer-events: none;
             text-align: center;
             width: 100%;
             letter-spacing: 0.5px;
@@ -218,31 +227,31 @@
         <h2>Aircraft Parking Management</h2>
     </div>
 
-    <!-- WADAH FULLSCREEN -->
     <div class="images-container" id="imagesContainer"></div>
 
     <div class="timeupdate">
         <div class="timestamp" id="timestamp">Last Update: -</div>
     </div>    
 
-    <div class="status-indicator" id="statusIndicator">Mode: Normal / Edit</div>    
+    <div class="status-indicator" id="statusIndicator">Mode: Terkunci (Hanya Lihat)</div>    
 
     <div class="control-panel">
-        <button class="main-button" id="toggleButtons">+</button>        
+        <button class="main-button" id="toggleButtons" title="Tambah Pesawat">+</button>        
+        <button class="main-button" id="lockUnlockBtn" title="Buka Kunci Edit">🔒</button>        
+
         <div class="button-container" id="buttonContainer">
-            <button class="image-button" onclick="addImage('ga.png')" title="General Aviation">GA</button>
-            <button class="image-button" onclick="addImage('qg.png')" title="Quick Ground">QG</button>
-            <button class="image-button" onclick="addImage('nga.png')" title="Non-GA Aircraft">NGA</button>
-            <button class="image-button" onclick="addImage('military.png')" title="Military">MIL</button>
-            <button class="image-button" onclick="addImage('jacking.png')" title="A/C On Jack">Jack</button>
-            <button class="image-button" onclick="addImage('taildock.png')" title="Tail Dock">Tail</button>
-            <button class="image-button" onclick="addImage('fuselagedock.png')" title="Fuse Dock">Fuse</button>
-            <button class="image-button" onclick="addImage('bothdock.png')" title="Both Dock">Both</button>
+            <button class="image-button" onclick="addImage('ga.png')">GA</button>
+            <button class="image-button" onclick="addImage('qg.png')">QG</button>
+            <button class="image-button" onclick="addImage('nga.png')">NGA</button>
+            <button class="image-button" onclick="addImage('military.png')">MIL</button>
+            <button class="image-button" onclick="addImage('jacking.png')">Jack</button>
+            <button class="image-button" onclick="addImage('taildock.png')">Tail</button>
+            <button class="image-button" onclick="addImage('fuselagedock.png')">Fuse</button>
+            <button class="image-button" onclick="addImage('bothdock.png')">Both</button>
             <button class="image-button eraser-button" id="eraserButton" onclick="toggleEraser()">🗑️ Erase Mode</button>
         </div>
     </div>    
 
-    <!-- CATATAN KECIL -->
     <div class="footer-note">
         *SETELAH UPDATE PARKING LAKUKAN RELOAD PAGE, UNTUK MEMASTIKAN PARKING SUDAH SESUAI
     </div>
@@ -256,8 +265,59 @@
         const addedImages = [];
         const container = document.getElementById('imagesContainer');
         const timestampElement = document.getElementById('timestamp');
+        const lockUnlockBtn = document.getElementById('lockUnlockBtn');
+        const toggleButtons = document.getElementById('toggleButtons');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const buttonContainer = document.getElementById('buttonContainer');
         
         let eraserMode = false;
+        
+        // SISTEM PASSWORD & LOCK
+        const EDIT_PASSWORD = "papagolda76";
+        let isEditAllowed = false; // Default: Terkunci
+
+        // Logika Kunci/Buka
+        lockUnlockBtn.addEventListener('click', function() {
+            if (isEditAllowed) {
+                // Proses Mengunci
+                isEditAllowed = false;
+                lockUnlockBtn.innerHTML = "🔒";
+                lockUnlockBtn.style.backgroundColor = "#c0392b"; // Merah
+                toggleButtons.style.display = "none";
+                statusIndicator.textContent = "Mode: Terkunci (Hanya Lihat)";
+                statusIndicator.style.backgroundColor = "#7f8c8d";
+                buttonContainer.classList.remove('visible');
+                if (eraserMode) toggleEraser(); // Matikan mode hapus jika sedang aktif
+                updateEditableClasses(); // Hapus efek hover/cursor
+            } else {
+                // Proses Membuka Kunci
+                const pwd = prompt("Masukkan password untuk mengedit parking:");
+                if (pwd === EDIT_PASSWORD) {
+                    isEditAllowed = true;
+                    lockUnlockBtn.innerHTML = "🔓";
+                    lockUnlockBtn.style.backgroundColor = "#27ae60"; // Hijau
+                    toggleButtons.style.display = "flex";
+                    statusIndicator.textContent = "Mode: Normal / Edit";
+                    statusIndicator.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+                    updateEditableClasses(); // Berikan efek hover/cursor move
+                } else if (pwd !== null) {
+                    alert("Password Salah! Akses ditolak.");
+                }
+            }
+        });
+
+        // Mengatur class agar UI merespon bisa diklik atau tidak
+        function updateEditableClasses() {
+            const images = document.querySelectorAll('.draggable-image');
+            const texts = document.querySelectorAll('.text-element');
+            if (isEditAllowed) {
+                images.forEach(el => el.classList.add('editable'));
+                texts.forEach(el => el.classList.add('editable'));
+            } else {
+                images.forEach(el => el.classList.remove('editable'));
+                texts.forEach(el => el.classList.remove('editable'));
+            }
+        }
 
         function updateTimestamp() {
             const now = new Date();
@@ -272,10 +332,10 @@
             try {
                 const state = addedImages.map(img => ({
                     src: img.src.substring(img.src.lastIndexOf('/') + 1), 
-                    left: img.style.left, // %
-                    top: img.style.top,   // %
+                    left: img.style.left, 
+                    top: img.style.top,   
                     text: img.textElement ? img.textElement.textContent : '', 
-                    rotation: img.rotation || 0 // Simpan rotasi sebagai angka (Integer)
+                    rotation: img.rotation || 0 
                 }));
                 await supabaseClient.from('parking_state').upsert({ id: 1, layout_data: state });
             } catch (err) {
@@ -296,14 +356,12 @@
                         img.style.left = item.left;
                         img.style.top = item.top;
                         
-                        // Menangani data lama (jika sebelumnya disave berupa transform text)
                         let loadedRotation = item.rotation || 0;
                         if (!item.rotation && item.transform) {
                             const match = item.transform.match(/rotate\((\d+)deg\)/);
                             if (match) loadedRotation = parseInt(match[1]);
                         }
 
-                        // Set rotasi gambar
                         img.rotation = loadedRotation;
                         img.style.setProperty('--rot', `${loadedRotation}deg`);
                         
@@ -312,19 +370,20 @@
                         addedImages.push(img);
                         if (item.text) addTextOverImage(item.text, img);
                     });
+                    updateEditableClasses(); // Sinkronkan UI awal
                 }
             } catch (err) {}
         }
 
-        document.getElementById('toggleButtons').addEventListener('click', function() {
-            document.getElementById('buttonContainer').classList.toggle('visible');
-            this.textContent = document.getElementById('buttonContainer').classList.contains('visible') ? '×' : '+';
+        toggleButtons.addEventListener('click', function() {
+            buttonContainer.classList.toggle('visible');
+            this.textContent = buttonContainer.classList.contains('visible') ? '×' : '+';
         });
 
         function addImage(src) {
             const img = document.createElement('img');
             img.src = src;
-            img.className = 'draggable-image';
+            img.className = 'draggable-image editable'; // Langsung editable karena pasti mode edit
 
             img.style.left = `50%`;
             img.style.top = `50%`;
@@ -341,8 +400,6 @@
                 textInput.placeholder = 'REG';
                 textInput.className = 'text-input';
                 textInput.style.position = 'absolute';
-                
-                // Koordinat form input sama persis dengan pusat gambar (offsetnya diatur oleh CSS transform)
                 textInput.style.left = img.style.left;
                 textInput.style.top = img.style.top; 
 
@@ -360,8 +417,8 @@
                 textInput.focus();
             }
 
-            document.getElementById('buttonContainer').classList.remove('visible');
-            document.getElementById('toggleButtons').textContent = '+';
+            buttonContainer.classList.remove('visible');
+            toggleButtons.textContent = '+';
             updateTimestamp(); 
             saveToSupabase(); 
         }
@@ -369,13 +426,14 @@
         function addTextOverImage(text, img) {
             const textElement = document.createElement('div');
             textElement.textContent = text;
-            textElement.className = 'text-element';
+            textElement.className = isEditAllowed ? 'text-element editable' : 'text-element';
             
-            // Koordinat teks mengikuti pusat gambar (offset posisi Kanan-Atas diatur otomatis oleh CSS)
             textElement.style.left = img.style.left;
             textElement.style.top = img.style.top; 
 
             textElement.addEventListener('click', function() {
+                if (!isEditAllowed) return; // PROTEKSI KLIK TEKS
+
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.value = textElement.textContent;
@@ -402,24 +460,27 @@
         }
 
         function toggleEraser() {
+            if (!isEditAllowed) return;
+
             eraserMode = !eraserMode;
             const btn = document.getElementById('eraserButton');
-            const status = document.getElementById('statusIndicator');
             
             btn.classList.toggle('active', eraserMode);
             if (eraserMode) {
-                status.textContent = "Mode: Hapus (Klik Pesawat)";
-                status.style.backgroundColor = "#c0392b";
+                statusIndicator.textContent = "Mode: Hapus (Klik Pesawat)";
+                statusIndicator.style.backgroundColor = "#c0392b";
                 document.body.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z'></path><line x1='18' y1='9' x2='12' y2='15'></line><line x1='12' y1='9' x2='18' y2='15'></line></svg>") 12 12, not-allowed`;
             } else {
-                status.textContent = "Mode: Normal / Edit";
-                status.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+                statusIndicator.textContent = "Mode: Normal / Edit";
+                statusIndicator.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
                 document.body.style.cursor = "";
             }
         }
 
         function makeDraggable(element) {
             element.onmousedown = function(e) {
+                if (!isEditAllowed) return; // PROTEKSI GESER PESAWAT
+
                 if (eraserMode) {
                     if (confirm("Hapus pesawat ini?")) {
                         if (element.textElement) container.removeChild(element.textElement);
@@ -443,7 +504,6 @@
                     let x = e.clientX;
                     let y = e.clientY;
 
-                    // Batasan agar tidak keluar dari layar
                     x = Math.max(0, Math.min(x, window.innerWidth));
                     y = Math.max(0, Math.min(y, window.innerHeight));
 
@@ -472,14 +532,16 @@
                 document.onmouseup = stopDragging;
             };
 
-            // LOGIKA ROTASI YANG SUDAH DIPERBAIKI (CLOCKWISE 90 DEG)
+            // PROTEKSI PUTAR PESAWAT
             element.ondblclick = async function() {
+                if (!isEditAllowed) return; 
+
                 let currentRotation = element.rotation || 0; 
                 currentRotation += 90; 
-                if (currentRotation >= 360) currentRotation = 0; // Reset ke 0 agar angka rotasi tetap bersih
+                if (currentRotation >= 360) currentRotation = 0; 
                 
                 element.rotation = currentRotation; 
-                element.style.setProperty('--rot', `${currentRotation}deg`); // Set rotasi ke CSS Variable
+                element.style.setProperty('--rot', `${currentRotation}deg`); 
                 
                 await saveToSupabase();
             };
