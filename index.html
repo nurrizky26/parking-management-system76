@@ -259,10 +259,10 @@
 
     <script>
         // INISIALISASI SUPABASE CLOUD
-        const SUPABASE_URL = "https://supabase.co";
+        const SUPABASE_URL = "https://vmhxqjaphzpmyeszvlao.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aXbq9WihrfTM968QFScX7w_V1m-LGZb";
         // Pastikan ditulis persis seperti di bawah ini (Supabase menggunakan 'S' besar)
-        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
         const addedImages = [];
@@ -300,7 +300,7 @@
                     transform: img.style.transform 
                 }));
 
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('parking_state')
                     .upsert({ id: 1, layout_data: state });
 
@@ -313,7 +313,7 @@
         // Memuat data state tata letak gambar dari Supabase
         async function loadFromSupabase() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('parking_state')
                     .select('layout_data')
                     .eq('id', 1)
@@ -533,7 +533,7 @@
         // Memuat highlight text dari Supabase
         async function loadHighlightFromSupabase() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('parking_highlight')
                     .select('highlight_text')
                     .eq('id', 1)
@@ -551,7 +551,7 @@
         // Menyimpan highlight text ke Supabase
         async function saveHighlightToSupabase(text) {
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('parking_highlight')
                     .upsert({ id: 1, highlight_text: text });
 
