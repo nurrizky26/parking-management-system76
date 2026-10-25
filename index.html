@@ -49,11 +49,13 @@
             z-index: 5;
         }
 
-        /* --- POSISI UI MELAYANG DIKEMBALIKAN --- */
+        /* --- POSISI UI MELAYANG --- */
+        
+        /* Posisi tepat di atas area NCC di gambar background */
         .timeupdate {
             position: absolute; 
-            bottom: 20px;
-            left: 20px;            
+            top: 45%;
+            right: 10%;            
             z-index: 100;
         }
 
@@ -61,9 +63,11 @@
             color: white;
             font-size: 14px; 
             font-weight: bold;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
             padding: 6px 12px;
             border-radius: 8px;
+            border: 1px solid #555;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
         }
 
         .status-indicator {
@@ -147,31 +151,35 @@
         .draggable-image {
             position: absolute;
             cursor: move;
-            width: 4.5%; /* Ukuran dinamis persentase */
+            width: 4.5%; 
             min-width: 25px;
             height: auto;
             z-index: 10;
             transition: transform 0.1s;
             filter: drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.6));
-            transform: translate(-50%, -50%); /* Sentralisasi dari titik kordinat */
+            /* Menggunakan CSS Variable --rot untuk rotasi yang akurat */
+            transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); 
         }
 
         .draggable-image:hover {
-            transform: translate(-50%, -50%) scale(1.15) !important;
+            /* Menjaga rotasi tetap ada saat di-hover dan menambahkan efek scale */
+            transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) scale(1.15) !important;
             z-index: 20;
         }
 
         .text-element {
             position: absolute;
             font-weight: 800;
-            font-size: clamp(9px, 1.2vw, 14px);
+            font-size: clamp(9px, 1vw, 13px);
             color: #000;            
             text-align: center;
             cursor: pointer;
             text-transform: uppercase;
             z-index: 15;
             text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 2px 2px 4px rgba(0,0,0,0.5);
-            transform: translate(-50%, -50%);
+            
+            /* Menggeser posisi teks ke arah KANAN ATAS dari titik kordinat pesawat */
+            transform: translate(15%, -130%); 
         }
 
         .text-input {
@@ -182,7 +190,9 @@
             text-transform: uppercase;
             font-size: 12px;
             text-align: center;
-            transform: translate(-50%, -50%);
+            
+            /* Samakan posisi form input dengan teks statis */
+            transform: translate(15%, -130%); 
         }
     </style>
 </head>
@@ -243,7 +253,7 @@
                     left: img.style.left, // %
                     top: img.style.top,   // %
                     text: img.textElement ? img.textElement.textContent : '', 
-                    transform: img.style.transform 
+                    rotation: img.rotation || 0 // Simpan rotasi sebagai angka (Integer)
                 }));
                 await supabaseClient.from('parking_state').upsert({ id: 1, layout_data: state });
             } catch (err) {
@@ -263,7 +273,18 @@
                         img.className = 'draggable-image';
                         img.style.left = item.left;
                         img.style.top = item.top;
-                        img.style.transform = item.transform; 
+                        
+                        // Menangani data lama (jika sebelumnya disave berupa transform text)
+                        let loadedRotation = item.rotation || 0;
+                        if (!item.rotation && item.transform) {
+                            const match = item.transform.match(/rotate\((\d+)deg\)/);
+                            if (match) loadedRotation = parseInt(match[1]);
+                        }
+
+                        // Set rotasi gambar
+                        img.rotation = loadedRotation;
+                        img.style.setProperty('--rot', `${loadedRotation}deg`);
+                        
                         makeDraggable(img);
                         container.appendChild(img);
                         addedImages.push(img);
@@ -283,10 +304,10 @@
             img.src = src;
             img.className = 'draggable-image';
 
-            // Muncul tepat di tengah layar (50%)
             img.style.left = `50%`;
             img.style.top = `50%`;
-            img.style.transform = 'translate(-50%, -50%)'; 
+            img.rotation = 0;
+            img.style.setProperty('--rot', '0deg');
             
             makeDraggable(img);
             container.appendChild(img);
@@ -298,8 +319,10 @@
                 textInput.placeholder = 'REG';
                 textInput.className = 'text-input';
                 textInput.style.position = 'absolute';
-                textInput.style.left = `50%`;
-                textInput.style.top = `55%`; 
+                
+                // Koordinat form input sama persis dengan pusat gambar (offsetnya diatur oleh CSS transform)
+                textInput.style.left = img.style.left;
+                textInput.style.top = img.style.top; 
 
                 img.textInput = textInput; 
 
@@ -326,6 +349,7 @@
             textElement.textContent = text;
             textElement.className = 'text-element';
             
+            // Koordinat teks mengikuti pusat gambar (offset posisi Kanan-Atas diatur otomatis oleh CSS)
             textElement.style.left = img.style.left;
             textElement.style.top = img.style.top; 
 
@@ -401,7 +425,6 @@
                     x = Math.max(0, Math.min(x, window.innerWidth));
                     y = Math.max(0, Math.min(y, window.innerHeight));
 
-                    // MENGUBAH KOORDINAT MENJADI PERSENTASE (%) DARI FULLSCREEN
                     const xPercent = (x / window.innerWidth) * 100;
                     const yPercent = (y / window.innerHeight) * 100;
 
@@ -427,11 +450,15 @@
                 document.onmouseup = stopDragging;
             };
 
+            // LOGIKA ROTASI YANG SUDAH DIPERBAIKI (CLOCKWISE 90 DEG)
             element.ondblclick = async function() {
                 let currentRotation = element.rotation || 0; 
                 currentRotation += 90; 
-                element.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`; 
+                if (currentRotation >= 360) currentRotation = 0; // Reset ke 0 agar angka rotasi tetap bersih
+                
                 element.rotation = currentRotation; 
+                element.style.setProperty('--rot', `${currentRotation}deg`); // Set rotasi ke CSS Variable
+                
                 await saveToSupabase();
             };
         }
