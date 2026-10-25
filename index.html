@@ -5,332 +5,309 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parking Management System</title>
+    <title>Aircraft Parking System</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            overflow: hidden;
+            background-color: #1e1e1e; /* Warna gelap agar layout menonjol */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);            
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .header {
             text-align: center;
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: #111;
             width: 100%;
+            padding: 15px 20px;
             box-sizing: border-box;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 10;
         }
 
-        .title-container {
-            flex: 1;
-        }
-
-        .timeupdate {
-            position: fixed; 
-            border-radius: 10px;            
-            bottom: 200px;
-            right: 70px;            
-            display: flex;
-            flex-direction: column;            
-        }
-
-        .timestamp {
-            display: flex;     
-            text-shadow: none;      
-            color: rgb(0, 0, 0);
-            font-size: 13px; 
-            font-weight: bold;            
-        }
-
-        .control-panel {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            z-index: 100;
-        }        
-
-        .main-button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+        .header h2 {
+            margin: 0;
             font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }        
-
-        .main-button:hover {
-            background-color: #2980b9;
-            transform: scale(1.1);
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
-        .button-container {
-            position: absolute;
-            bottom: 50px;
-            right: 0;
-            display: none;
-            flex-wrap: wrap;
-            gap: 6px;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 10px;
+        /* INI ADALAH PAPAN LAYOUT UTAMA AGAR POSISI PESAWAT TERKUNCI */
+        .parking-board {
+            position: relative;
+            width: 95vw;
+            max-width: 1400px;
+            aspect-ratio: 1472 / 670; /* Menyesuaikan rasio gambar asli */
+            background-image: url('backgroundparking.png');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin-top: 20px;
+            border: 2px solid #555;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
             border-radius: 8px;
-            width: 180px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .button-container.visible {
-            display: flex;
-        }
-
-        .image-button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            width: 50px;
-            transition: all 0.2s ease;
-        }
-
-        .image-button:hover {
-            background-color: #2980b9;
-        }
-
-        .eraser-button {
-            background-color: #e74c3c;
-        }
-
-        .eraser-button.active {
-            background-color: #c0392b;
-            box-shadow: 0 0 0 2px white;
         }
 
         .images-container {
             position: absolute;
-            top: 60px;
-            left: 0;
-            right: 0;
-            bottom: 60px;
-            overflow: hidden;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%;
+            height: 100%;
         }
 
         .draggable-image {
             position: absolute;
             cursor: move;
-            width: 10%;
+            width: 4.5%; /* Ukuran dinamis agar pas di kotak Line / Hangar */
+            min-width: 25px;
             height: auto;
-            max-width: 48px;
-            max-height: 48px;
             z-index: 10;
             transition: transform 0.1s;
-            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+            filter: drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.6));
         }
 
         .draggable-image:hover {
-            transform: scale(1.1);
+            transform: scale(1.15) !important;
             z-index: 20;
-        }
-
-        .status-indicator {
-            position: fixed;
-            bottom: 10px;
-            right: 150px;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
         }
 
         .text-element {
             position: absolute;
-            font-weight: bold;
-            font-size: 12px;
-            color: black;            
+            font-weight: 800;
+            font-size: clamp(9px, 1vw, 13px);
+            color: #000;            
             text-align: center;
             cursor: pointer;
             text-transform: uppercase;
             z-index: 15;
-            text-shadow: 1px 1px 0 #fff, 
-                -1px -1px 0 #fff, 
-                1px -1px 0 #fff, 
-                -1px 1px 0 #fff,
-                4px 4px 8px rgba(255,255,255,0.3);
+            text-shadow: 
+                -1px -1px 0 #fff, 1px -1px 0 #fff, 
+                -1px 1px 0 #fff, 1px 1px 0 #fff,
+                2px 2px 4px rgba(0,0,0,0.5);
+            transform: translate(-50%, -50%); /* Sentralisasi dari titik kordinat */
         }
 
         .text-input {
-            width: 100px;
+            width: 80px;
             padding: 4px;
             border-radius: 4px;
-            border: none;
-            margin-top: 3px;
+            border: 1px solid #3498db;
             text-transform: uppercase;
+            font-size: 12px;
+            text-align: center;
+            transform: translate(-50%, -50%);
         }
 
-        .highlight-container {
-            display: block; /* Diperbaiki: Sebelumnya none, sehingga box tidak muncul */
-            position: fixed; 
-            top: 395px;
-            right: 377px;
-            width: 532px; 
-            max-height: 530px; 
-            overflow-y: auto; 
-            background-color: rgba(47, 100, 134, 0.8); /* Dibuat sedikit transparan */
-            padding: 10px;
-            border-radius: 8px;
-            z-index: 200; 
-        }
-                
-        .text-area {
-            width: 100%; /* Diperbaiki: Sesuaikan dengan lebar container */
+        /* KONTROL UI BAWAH */
+        .ui-bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             box-sizing: border-box;
-            height: 60px; /* Diperbaiki: Diberi height agar nyaman diketik */
-            margin-bottom: 5px;
+            border-top: 1px solid #333;
+            z-index: 100;
+        }
+
+        .timestamp {
+            color: #44b3fd;
+            font-size: 13px; 
+            font-weight: bold;            
+        }
+
+        .status-indicator {
+            background-color: #34495e;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .highlight-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .highlight-form input {
+            width: 300px;
+            padding: 6px 10px;
             border-radius: 4px;
             border: none;
-            padding: 4px;
+            background: #fff;
+            color: #000;
         }
 
         .update-button {
-            background-color: #3a98d6;
+            background-color: #3498db;
             color: white;
             border: none;
             border-radius: 4px;
-            padding: 6px 12px;
+            padding: 6px 15px;
             cursor: pointer;
             font-weight: bold;
         }
 
-        .update-button:hover {
-            background-color: #44b3fd;
+        .update-button:hover { background-color: #2980b9; }
+
+        /* TEKS HIGHLIGHT DI PAPAN */
+        .highlight-display-board {
+            position: absolute;
+            top: 36%; /* Posisi persentase disesuaikan dengan kotak HIGHLIGHT PROJECT di gambar */
+            right: 6%; 
+            width: 40%;
+            text-align: center;
+            color: #f1c40f;
+            font-weight: bold;
+            font-size: clamp(12px, 1.5vw, 20px);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 5;
+            pointer-events: none;
         }
 
-        .highlight-text {
-            color: rgb(255, 255, 255);
-            font-weight: bold;
-            font-size: 14px;
-            text-align: left;
-            margin-top: 10px;
-            word-wrap: break-word; /* Mencegah teks keluar dari kotak */
+        /* TOMBOL MENU PESAWAT */
+        .control-panel {
+            display: flex;
+            gap: 10px;
+            position: relative;
         }
+
+        .button-container {
+            display: none;
+            position: absolute;
+            bottom: 50px;
+            right: 0;
+            background-color: rgba(30, 30, 30, 0.95);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            width: 250px;
+            gap: 8px;
+            flex-wrap: wrap;
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.5);
+        }
+        .button-container.visible { display: flex; }
+
+        .main-button {
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .main-button:hover { background-color: #d35400; }
+
+        .image-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            flex: 1 1 30%;
+        }
+        .image-button:hover { background-color: #2980b9; }
+
+        .eraser-button { background-color: #e74c3c; flex: 1 1 100%; }
+        .eraser-button.active { background-color: #c0392b; box-shadow: inset 0 0 5px #000; border: 1px solid #fff; }
     </style>
 </head>
-<body style="background-image: url('backgroundparking.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+<body>
     <div class="header">
-        <div class="title-container">
-            <h2 style="margin: 0; font-size: 18px;">Aircraft Parking System</h2>            
-        </div>        
+        <h2>Aircraft Parking Management</h2>
     </div>
 
-    <div class="timeupdate">
-        <div class="timestamp" id="timestamp"> Last Updated: Not yet modified </div>
-    </div>       
+    <!-- AREA PARKIR UTAMA -->
+    <div class="parking-board" id="parkingBoard">
+        <div class="images-container" id="imagesContainer"></div>
+        <!-- Teks Highlight Muncul di Sini -->
+        <div class="highlight-display-board" id="highlightDisplay"></div>
+    </div>
 
-    <div class="images-container" id="imagesContainer"></div>
-    
-    <div class="control-panel">
-        <button class="main-button" id="toggleButtons">+</button>        
-        <div class="button-container" id="buttonContainer">
-            <button class="image-button" onclick="addImage('ga.png')" title="General Aviation">GA</button>
-            <button class="image-button" onclick="addImage('qg.png')" title="Quick Ground">QG</button>
-            <button class="image-button" onclick="addImage('nga.png')" title="Non-GA Aircraft">NGA</button>
-            <button class="image-button" onclick="addImage('military.png')" title="Military">MIL</button>
-            <button class="image-button" onclick="addImage('jacking.png')" title="General Aviation">Jack</button>
-            <button class="image-button" onclick="addImage('taildock.png')" title="General Aviation">Tail</button>
-            <button class="image-button" onclick="addImage('fuselagedock.png')" title="General Aviation">Fuse</button>
-            <button class="image-button" onclick="addImage('bothdock.png')" title="General Aviation">Both</button>
-            <button class="image-button eraser-button" id="eraserButton" onclick="toggleEraser()" title="Click to erase images">Erase</button>
+    <!-- UI KONTROL BAWAH -->
+    <div class="ui-bottom-bar">
+        <div class="timestamp" id="timestamp">Last Updated: Not yet modified</div>
+        
+        <div class="status-indicator" id="statusIndicator">Mode: Normal / Edit</div>
+
+        <div class="highlight-form">
+            <input type="text" id="highlightInput" placeholder="Update Highlight Text...">
+            <button class="update-button" id="updateHighlightButton">Update</button>
         </div>
-    </div>    
-    
-    <div class="status-indicator" id="statusIndicator"> Add Or Edit Mode </div>    
+
+        <div class="control-panel">
+            <button class="main-button" id="toggleButtons">➕ Add Aircraft</button>        
+            <div class="button-container" id="buttonContainer">
+                <button class="image-button" onclick="addImage('GA.png')" title="General Aviation">GA</button>
+                <button class="image-button" onclick="addImage('QG.png')" title="Quick Ground">QG</button>
+                <button class="image-button" onclick="addImage('NGA.png')" title="Non-GA Aircraft">NGA</button>
+                <button class="image-button" onclick="addImage('MILITARY.png')" title="Military">MIL</button>
+                <button class="image-button" onclick="addImage('jacking.png')" title="A/C On Jack">Jack</button>
+                <button class="image-button" onclick="addImage('taildock.png')" title="Tail Dock">Tail</button>
+                <button class="image-button" onclick="addImage('fuselagedock.png')" title="Fuse Dock">Fuse</button>
+                <button class="image-button" onclick="addImage('bothdock.png')" title="Both Dock">Both</button>
+                <button class="image-button eraser-button" id="eraserButton" onclick="toggleEraser()">🗑️ Erase Mode</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // INISIALISASI SUPABASE CLOUD
         const SUPABASE_URL = "https://vmhxqjaphzpmyeszvlao.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aXbq9WihrfTM968QFScX7w_V1m-LGZb";
-        
-        // Inisialisasi Klien Supabase
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const addedImages = [];
         const container = document.getElementById('imagesContainer');
-        const toggleButton = document.getElementById('toggleButtons');
-        const buttonContainer = document.getElementById('buttonContainer');
-        const eraserButton = document.getElementById('eraserButton');
-        const statusIndicator = document.getElementById('statusIndicator');
-        const timestampElement = document.getElementById('timestamp');
-        const highlightDisplay = document.getElementById('highlightDisplay');
-        const highlightInput = document.getElementById('highlightInput');
+        const parkingBoard = document.getElementById('parkingBoard');
         
         let eraserMode = false;
-        let currentDraggedImage = null;
-        
-        // Update Timestamp
+
         function updateTimestamp() {
             const now = new Date();
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const dayName = days[now.getDay()];
             const date = String(now.getDate()).padStart(2, '0');
             const month = String(now.getMonth() + 1).padStart(2, '0');
-            const year = now.getFullYear();
-            timestampElement.textContent = `${dayName}, ${date}/${month}/${year}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const hours = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('timestamp').textContent = `Last Update: ${date}/${month}/${now.getFullYear()} - ${hours}:${mins}`;
         }
 
-        // Simpan State Gambar
         async function saveToSupabase() {
             try {
                 const state = addedImages.map(img => ({
                     src: img.src.substring(img.src.lastIndexOf('/') + 1), 
-                    left: img.style.left,
-                    top: img.style.top,
+                    left: img.style.left, // Tersimpan dalam %
+                    top: img.style.top,   // Tersimpan dalam %
                     text: img.textElement ? img.textElement.textContent : '', 
                     transform: img.style.transform 
                 }));
 
-                const { error } = await supabaseClient
-                    .from('parking_state')
-                    .upsert({ id: 1, layout_data: state });
-
-                if (error) throw error;
+                await supabaseClient.from('parking_state').upsert({ id: 1, layout_data: state });
             } catch (err) {
-                console.error("Gagal menyimpan tata letak:", err.message);
-                alert("Gagal simpan gambar! Cek aturan RLS di Supabase. Error: " + err.message);
+                console.error("Gagal menyimpan:", err.message);
             }
         }
 
-        // Muat State Gambar
         async function loadFromSupabase() {
             try {
-                const { data, error } = await supabaseClient
-                    .from('parking_state')
-                    .select('layout_data')
-                    .eq('id', 1)
-                    .maybeSingle();
-
-                if (error) throw error;
-
+                const { data } = await supabaseClient.from('parking_state').select('layout_data').eq('id', 1).maybeSingle();
                 if (data && data.layout_data) {
                     container.innerHTML = "";
                     addedImages.length = 0;
-
                     data.layout_data.forEach(item => {
                         const img = document.createElement('img');
                         img.src = item.src;
@@ -341,33 +318,26 @@
                         makeDraggable(img);
                         container.appendChild(img);
                         addedImages.push(img);
-                        if (item.text) {
-                            addTextOverImage(item.text, img);
-                        }
+                        if (item.text) addTextOverImage(item.text, img);
                     });
                 }
-            } catch (err) {
-                console.error("Gagal memuat tata letak:", err.message);
-            }
+            } catch (err) {}
         }
 
-        // Tombol + 
-        toggleButton.addEventListener('click', function() {
-            buttonContainer.classList.toggle('visible');
-            toggleButton.textContent = buttonContainer.classList.contains('visible') ? '×' : '+';
+        document.getElementById('toggleButtons').addEventListener('click', function() {
+            document.getElementById('buttonContainer').classList.toggle('visible');
         });
 
-        // Tambah Gambar
         function addImage(src) {
             const img = document.createElement('img');
             img.src = src;
             img.className = 'draggable-image';
 
-            const containerRect = container.getBoundingClientRect();
-            const x = (containerRect.width - 48) / 2; 
-            const y = (containerRect.height - 48) / 2; 
-            img.style.left = `${x}px`;
-            img.style.top = `${y}px`;
+            // Taruh di tengah map saat pertama kali dipanggil (50%)
+            img.style.left = `50%`;
+            img.style.top = `50%`;
+            img.style.transform = 'translate(-50%, -50%)'; // Centering helper
+            
             makeDraggable(img);
             container.appendChild(img);
             addedImages.push(img);
@@ -375,11 +345,11 @@
             if (!['jacking.png', 'taildock.png', 'fuselagedock.png', 'bothdock.png'].includes(src)) {
                 const textInput = document.createElement('input');
                 textInput.type = 'text';
-                textInput.placeholder = 'Enter text here';
+                textInput.placeholder = 'A/C REG';
                 textInput.className = 'text-input';
                 textInput.style.position = 'absolute';
-                textInput.style.left = `${x}px`;
-                textInput.style.top = `${y + 70}px`; 
+                textInput.style.left = `50%`;
+                textInput.style.top = `55%`; 
 
                 img.textInput = textInput; 
 
@@ -392,29 +362,22 @@
                     }
                 });
                 container.appendChild(textInput);
+                textInput.focus();
             }
 
-            buttonContainer.classList.remove('visible');
-            toggleButton.textContent = '+';
+            document.getElementById('buttonContainer').classList.remove('visible');
             updateTimestamp(); 
             saveToSupabase(); 
         }
 
-        // Teks di atas Gambar
         function addTextOverImage(text, img) {
             const textElement = document.createElement('div');
             textElement.textContent = text;
             textElement.className = 'text-element';
+            
+            // Teks menempel persis di koordinat gambar
             textElement.style.left = img.style.left;
             textElement.style.top = img.style.top; 
-
-            setTimeout(() => {
-                const imgRect = img.getBoundingClientRect();
-                const textWidth = textElement.offsetWidth;
-                const textHeight = textElement.offsetHeight;
-                textElement.style.left = `${parseFloat(img.style.left) + (imgRect.width - textWidth) / 2}px`;
-                textElement.style.top = `${parseFloat(img.style.top) + (imgRect.height - textHeight) / 2}px`;
-            }, 50);
 
             textElement.addEventListener('click', function() {
                 const input = document.createElement('input');
@@ -442,66 +405,73 @@
             img.textElement = textElement; 
         }
 
-        // Mode Hapus
         function toggleEraser() {
             eraserMode = !eraserMode;
-            eraserButton.classList.toggle('active', eraserMode);
+            const btn = document.getElementById('eraserButton');
+            const status = document.getElementById('statusIndicator');
+            
+            btn.classList.toggle('active', eraserMode);
             if (eraserMode) {
-                statusIndicator.textContent = "Erase Mode (Click Image to delete)";
-                container.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z'></path><line x1='18' y1='9' x2='12' y2='15'></line><line x1='12' y1='9' x2='18' y2='15'></line></svg>") 12 12, not-allowed`;
+                status.textContent = "Mode: Hapus (Klik Pesawat)";
+                status.style.backgroundColor = "#c0392b";
+                parkingBoard.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z'></path><line x1='18' y1='9' x2='12' y2='15'></line><line x1='12' y1='9' x2='18' y2='15'></line></svg>") 12 12, not-allowed`;
             } else {
-                statusIndicator.textContent = "Add Or Edit Mode";
-                container.style.cursor = "";
+                status.textContent = "Mode: Normal / Edit";
+                status.style.backgroundColor = "#34495e";
+                parkingBoard.style.cursor = "";
             }
-            updateTimestamp();
         }
 
-        // Fungsi Seret & Putar Gambar
         function makeDraggable(element) {
             element.onmousedown = function(e) {
                 if (eraserMode) {
-                    if (confirm("Delete this image?")) {
+                    if (confirm("Hapus pesawat ini?")) {
                         if (element.textElement) container.removeChild(element.textElement);
+                        if (element.textInput) container.removeChild(element.textInput);
                         container.removeChild(element);
                         const index = addedImages.indexOf(element);
-                        if (index > -1) {
-                            addedImages.splice(index, 1);
-                        }
+                        if (index > -1) addedImages.splice(index, 1);
                         updateTimestamp(); 
                         saveToSupabase(); 
                     }
                     return;
                 }
 
-                e = e || window.event;
                 e.preventDefault();
                 element.style.zIndex = '100';
-                currentDraggedImage = element;
-                const startX = e.clientX - element.getBoundingClientRect().left;
-                const startY = e.clientY - element.getBoundingClientRect().top;
-
+                if(element.textElement) element.textElement.style.zIndex = '101';
+                
+                const boardRect = parkingBoard.getBoundingClientRect();
+                
                 function moveImage(e) {
                     e.preventDefault();
-                    const containerRect = container.getBoundingClientRect();
-                    let x = e.clientX - containerRect.left - startX;
-                    let y = e.clientY - containerRect.top - startY;
+                    
+                    // Kalkulasi posisi mouse relatif terhadap ukuran layout saat ini
+                    let x = e.clientX - boardRect.left;
+                    let y = e.clientY - boardRect.top;
 
-                    x = Math.max(0, Math.min(x, containerRect.width - element.clientWidth));
-                    y = Math.max(0, Math.min(y, containerRect.height - element.clientHeight));
-                    element.style.left = `${x}px`;
-                    element.style.top = `${y}px`;
+                    // Batasan agar tidak keluar dari map
+                    x = Math.max(0, Math.min(x, boardRect.width));
+                    y = Math.max(0, Math.min(y, boardRect.height));
+
+                    // MENGUBAH KOORDINAT MENJADI PERSENTASE (%)
+                    const xPercent = (x / boardRect.width) * 100;
+                    const yPercent = (y / boardRect.height) * 100;
+
+                    element.style.left = `${xPercent}%`;
+                    element.style.top = `${yPercent}%`;
 
                     if (element.textElement) {
-                        const txtRect = element.textElement.getBoundingClientRect();
-                        element.textElement.style.left = `${x + (element.clientWidth - txtRect.width) / 2}px`;
-                        element.textElement.style.top = `${y + (element.clientHeight - txtRect.height) / 2}px`;
+                        element.textElement.style.left = `${xPercent}%`;
+                        element.textElement.style.top = `${yPercent}%`;
                     }
                 }
 
                 async function stopDragging() {
                     document.onmouseup = null;
                     document.onmousemove = null;
-                    currentDraggedImage = null;
+                    element.style.zIndex = '10';
+                    if(element.textElement) element.textElement.style.zIndex = '15';
                     await saveToSupabase(); 
                     updateTimestamp(); 
                 }
@@ -511,73 +481,57 @@
             };
 
             element.ondblclick = async function() {
+                // Hapus translate sebelumnya agar rotasi mulus, gabungkan transform
                 let currentRotation = element.rotation || 0; 
                 currentRotation += 90; 
-                element.style.transform = `rotate(${currentRotation}deg)`; 
+                element.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`; 
                 element.rotation = currentRotation; 
                 await saveToSupabase();
             };
         }
 
-        // Eksekusi Awal Saat Dimuat
+        // HIGHLIGHT SYSTEM
+        const highlightDisplay = document.getElementById('highlightDisplay');
+        const highlightInput = document.getElementById('highlightInput');
+
+        async function loadHighlightFromSupabase() {
+            try {
+                const { data } = await supabaseClient.from('parking_highlight').select('highlight_text').eq('id', 1).maybeSingle();
+                if (data && data.highlight_text) {
+                    highlightDisplay.innerHTML = data.highlight_text.replace(/\n/g, '<br>');
+                }
+            } catch (err) {}
+        }
+
+        async function saveHighlightToSupabase(text) {
+            try {
+                await supabaseClient.from('parking_highlight').upsert({ id: 1, highlight_text: text });
+            } catch (err) {}
+        }
+
+        document.getElementById('updateHighlightButton').addEventListener('click', async function() {
+            const text = highlightInput.value;
+            highlightDisplay.innerHTML = text.replace(/\n/g, '<br>'); 
+            highlightInput.value = ''; 
+            await saveHighlightToSupabase(text); 
+            updateTimestamp(); 
+        });
+
+        highlightInput.addEventListener('keypress', async function(event) {
+            if (event.key === 'Enter') {
+                const text = highlightInput.value;
+                highlightDisplay.innerHTML = text.replace(/\n/g, '<br>'); 
+                highlightInput.value = ''; 
+                await saveHighlightToSupabase(text); 
+                updateTimestamp();
+            }
+        });
+
         window.onload = async function() {
             await loadFromSupabase();
             await loadHighlightFromSupabase(); 
             updateTimestamp(); 
         };
-
-        // Muat Highlight
-        async function loadHighlightFromSupabase() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('parking_highlight')
-                    .select('highlight_text')
-                    .eq('id', 1)
-                    .maybeSingle();
-
-                if (error) throw error;
-                if (data && data.highlight_text) {
-                    highlightDisplay.innerHTML = data.highlight_text.replace(/\n/g, '<br>');
-                }
-            } catch (err) {
-                console.error("Gagal memuat highlight:", err.message);
-            }
-        }
-
-        // Simpan Highlight
-        async function saveHighlightToSupabase(text) {
-            try {
-                const { error } = await supabaseClient
-                    .from('parking_highlight')
-                    .upsert({ id: 1, highlight_text: text });
-
-                if (error) throw error;
-            } catch (err) {
-                console.error("Gagal menyimpan highlight:", err.message);
-                alert("Gagal simpan highlight! Cek aturan RLS di Supabase. Error: " + err.message);
-            }
-        }
-
-        // Proses Highlight saat klik tombol
-        document.getElementById('updateHighlightButton').addEventListener('click', async function() {
-            const highlightText = highlightInput.value;
-            highlightDisplay.innerHTML = highlightText.replace(/\n/g, '<br>'); 
-            highlightInput.value = ''; 
-            await saveHighlightToSupabase(highlightText); 
-            updateTimestamp(); 
-        });
-
-        // Proses Highlight saat Enter ditekan (menghindari line break baru jika langsung kirim)
-        highlightInput.addEventListener('keypress', async function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) { // Gunakan Shift+Enter untuk enter baru, Enter untuk submit
-                event.preventDefault(); // Mencegah enter membuat baris baru sebelum disubmit
-                const highlightText = highlightInput.value;
-                highlightDisplay.innerHTML = highlightText.replace(/\n/g, '<br>'); 
-                highlightInput.value = ''; 
-                await saveHighlightToSupabase(highlightText); 
-                updateTimestamp();
-            }
-        });
     </script>
 </body>
 </html>
