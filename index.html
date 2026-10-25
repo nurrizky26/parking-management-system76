@@ -14,18 +14,18 @@
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);           
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);            
         }
 
         .header {
             text-align: center;
-            padding: none;
             background-color: rgba(0, 0, 0, 0.6);
             width: 100%;
             box-sizing: border-box;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 10px;
         }
 
         .title-container {
@@ -34,7 +34,7 @@
 
         .timeupdate {
             position: fixed; 
-            border-radius: 10%;           
+            border-radius: 10px;            
             bottom: 200px;
             right: 70px;            
             display: flex;
@@ -46,7 +46,7 @@
             text-shadow: none;      
             color: rgb(0, 0, 0);
             font-size: 13px; 
-            font-weight: bold;           
+            font-weight: bold;            
         }
 
         .control-panel {
@@ -163,7 +163,7 @@
             position: absolute;
             font-weight: bold;
             font-size: 12px;
-            color: black;           
+            color: black;            
             text-align: center;
             cursor: pointer;
             text-transform: uppercase;
@@ -185,22 +185,23 @@
         }
 
         .highlight-container {
-            display: none; 
+            display: block; /* Diperbaiki: Sebelumnya none, sehingga box tidak muncul */
             position: fixed; 
             top: 395px;
             right: 377px;
             width: 532px; 
             max-height: 530px; 
             overflow-y: auto; 
-            background-color: #2f6486;
-            padding: 5px;
+            background-color: rgba(47, 100, 134, 0.8); /* Dibuat sedikit transparan */
+            padding: 10px;
             border-radius: 8px;
             z-index: 200; 
         }
                 
         .text-area {
-            width: 700px;
-            height: 12px;
+            width: 100%; /* Diperbaiki: Sesuaikan dengan lebar container */
+            box-sizing: border-box;
+            height: 60px; /* Diperbaiki: Diberi height agar nyaman diketik */
             margin-bottom: 5px;
             border-radius: 4px;
             border: none;
@@ -212,12 +213,22 @@
             color: white;
             border: none;
             border-radius: 4px;
-            padding: 4px 8px;
+            padding: 6px 12px;
             cursor: pointer;
+            font-weight: bold;
         }
 
         .update-button:hover {
             background-color: #44b3fd;
+        }
+
+        .highlight-text {
+            color: rgb(255, 255, 255);
+            font-weight: bold;
+            font-size: 14px;
+            text-align: left;
+            margin-top: 10px;
+            word-wrap: break-word; /* Mencegah teks keluar dari kotak */
         }
     </style>
 </head>
@@ -225,7 +236,7 @@
     <div class="header">
         <div class="title-container">
             <h2 style="margin: 0; font-size: 18px;">Aircraft Parking System</h2>            
-        </div>       
+        </div>        
     </div>
 
     <div class="timeupdate">
@@ -235,7 +246,7 @@
     <div class="highlight-container" id="highlightContainer">
         <textarea class="text-area" id="highlightInput" placeholder="Input text here, then Enter Or Click Update..." rows="4" style="resize: none;"></textarea>
         <button class="update-button" id="updateHighlightButton">Update</button>
-        <div class="highlight-text" id="highlightDisplay" style="color: rgb(255, 255, 255); font-weight: bold; font-size: 14px; text-align: left; margin-top: 10px;"></div>
+        <div class="highlight-text" id="highlightDisplay"></div>
     </div>
 
     <div class="images-container" id="imagesContainer"></div>
@@ -261,9 +272,9 @@
         // INISIALISASI SUPABASE CLOUD
         const SUPABASE_URL = "https://vmhxqjaphzpmyeszvlao.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aXbq9WihrfTM968QFScX7w_V1m-LGZb";
-        // Pastikan ditulis persis seperti di bawah ini (Supabase menggunakan 'S' besar)
+        
+        // Inisialisasi Klien Supabase
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 
         const addedImages = [];
         const container = document.getElementById('imagesContainer');
@@ -274,11 +285,11 @@
         const timestampElement = document.getElementById('timestamp');
         const highlightDisplay = document.getElementById('highlightDisplay');
         const highlightInput = document.getElementById('highlightInput');
-        const highlightContainer = document.getElementById('highlightContainer');
+        
         let eraserMode = false;
         let currentDraggedImage = null;
         
-        // Function to update the timestamp
+        // Update Timestamp
         function updateTimestamp() {
             const now = new Date();
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -289,11 +300,11 @@
             timestampElement.textContent = `${dayName}, ${date}/${month}/${year}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         }
 
-        // Menyimpan data state tata letak gambar ke Supabase
+        // Simpan State Gambar
         async function saveToSupabase() {
             try {
                 const state = addedImages.map(img => ({
-                    src: img.src.substring(img.src.lastIndexOf('/') + 1), // Simpan nama filenya saja
+                    src: img.src.substring(img.src.lastIndexOf('/') + 1), 
                     left: img.style.left,
                     top: img.style.top,
                     text: img.textElement ? img.textElement.textContent : '', 
@@ -306,11 +317,12 @@
 
                 if (error) throw error;
             } catch (err) {
-                console.error("Gagal menyimpan tata letak ke Supabase:", err.message);
+                console.error("Gagal menyimpan tata letak:", err.message);
+                alert("Gagal simpan gambar! Cek aturan RLS di Supabase. Error: " + err.message);
             }
         }
 
-        // Memuat data state tata letak gambar dari Supabase
+        // Muat State Gambar
         async function loadFromSupabase() {
             try {
                 const { data, error } = await supabaseClient
@@ -341,22 +353,22 @@
                     });
                 }
             } catch (err) {
-                console.error("Gagal memuat tata letak dari Supabase:", err.message);
+                console.error("Gagal memuat tata letak:", err.message);
             }
         }
 
-        // Toggle button container visibility
+        // Tombol + 
         toggleButton.addEventListener('click', function() {
             buttonContainer.classList.toggle('visible');
             toggleButton.textContent = buttonContainer.classList.contains('visible') ? '×' : '+';
         });
 
+        // Tambah Gambar
         function addImage(src) {
             const img = document.createElement('img');
             img.src = src;
             img.className = 'draggable-image';
 
-            // Position in center of available space
             const containerRect = container.getBoundingClientRect();
             const x = (containerRect.width - 48) / 2; 
             const y = (containerRect.height - 48) / 2; 
@@ -366,8 +378,7 @@
             container.appendChild(img);
             addedImages.push(img);
 
-            // Create a text input for specific images only
-            if (src !== 'jacking.png' && src !== 'taildock.png' && src !== 'fuselagedock.png' && src !== 'bothdock.png') {
+            if (!['jacking.png', 'taildock.png', 'fuselagedock.png', 'bothdock.png'].includes(src)) {
                 const textInput = document.createElement('input');
                 textInput.type = 'text';
                 textInput.placeholder = 'Enter text here';
@@ -376,10 +387,8 @@
                 textInput.style.left = `${x}px`;
                 textInput.style.top = `${y + 53}px`; 
 
-                // Store the text input in the image element
                 img.textInput = textInput; 
 
-                // Add event listener to save text on click
                 textInput.addEventListener('keypress', async function(event) {
                     if (event.key === 'Enter') {
                         addTextOverImage(textInput.value, img);
@@ -391,13 +400,13 @@
                 container.appendChild(textInput);
             }
 
-            // Hide buttons after selection and update timestamp
             buttonContainer.classList.remove('visible');
             toggleButton.textContent = '+';
             updateTimestamp(); 
             saveToSupabase(); 
         }
 
+        // Teks di atas Gambar
         function addTextOverImage(text, img) {
             const textElement = document.createElement('div');
             textElement.textContent = text;
@@ -405,7 +414,6 @@
             textElement.style.left = img.style.left;
             textElement.style.top = img.style.top; 
 
-            // Adjust the text position to be centered over the image
             setTimeout(() => {
                 const imgRect = img.getBoundingClientRect();
                 const textWidth = textElement.offsetWidth;
@@ -414,7 +422,6 @@
                 textElement.style.top = `${parseFloat(img.style.top) + (imgRect.height - textHeight) / 2}px`;
             }, 50);
 
-            // Make the text element editable on click
             textElement.addEventListener('click', function() {
                 const input = document.createElement('input');
                 input.type = 'text';
@@ -424,7 +431,6 @@
                 input.style.left = textElement.style.left;
                 input.style.top = textElement.style.top;
 
-                // Save the new text on Enter
                 input.addEventListener('keypress', async function(event) {
                     if (event.key === 'Enter') {
                         textElement.textContent = input.value; 
@@ -442,22 +448,21 @@
             img.textElement = textElement; 
         }
 
-       function toggleEraser() {
-    eraserMode = !eraserMode;
-    eraserButton.classList.toggle('active', eraserMode);
-    if (eraserMode) {
-        statusIndicator.textContent = "Erase Mode (Click Image to delete)";
-        
-        // Menggunakan backtick (`) agar kode SVG di dalamnya bebas menggunakan tanda kutip tanpa error
-        container.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z'></path><line x1='18' y1='9' x2='12' y2='15'></line><line x1='12' y1='9' x2='18' y2='15'></line></svg>") 12 12, not-allowed`;
-        
-    } else {
-        statusIndicator.textContent = "Add Or Edit Mode";
-        container.style.cursor = "";
-    }
-    updateTimestamp();
-}
+        // Mode Hapus
+        function toggleEraser() {
+            eraserMode = !eraserMode;
+            eraserButton.classList.toggle('active', eraserMode);
+            if (eraserMode) {
+                statusIndicator.textContent = "Erase Mode (Click Image to delete)";
+                container.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z'></path><line x1='18' y1='9' x2='12' y2='15'></line><line x1='12' y1='9' x2='18' y2='15'></line></svg>") 12 12, not-allowed`;
+            } else {
+                statusIndicator.textContent = "Add Or Edit Mode";
+                container.style.cursor = "";
+            }
+            updateTimestamp();
+        }
 
+        // Fungsi Seret & Putar Gambar
         function makeDraggable(element) {
             element.onmousedown = function(e) {
                 if (eraserMode) {
@@ -474,7 +479,6 @@
                     return;
                 }
 
-                // Normal drag mode
                 e = e || window.event;
                 e.preventDefault();
                 element.style.zIndex = '100';
@@ -488,7 +492,6 @@
                     let x = e.clientX - containerRect.left - startX;
                     let y = e.clientY - containerRect.top - startY;
 
-                    // Boundary checks
                     x = Math.max(0, Math.min(x, containerRect.width - element.clientWidth));
                     y = Math.max(0, Math.min(y, containerRect.height - element.clientHeight));
                     element.style.left = `${x}px`;
@@ -513,7 +516,6 @@
                 document.onmouseup = stopDragging;
             };
 
-            // Add double-click event for rotation
             element.ondblclick = async function() {
                 let currentRotation = element.rotation || 0; 
                 currentRotation += 90; 
@@ -523,14 +525,14 @@
             };
         }
 
-        // Load state on page load
+        // Eksekusi Awal Saat Dimuat
         window.onload = async function() {
             await loadFromSupabase();
             await loadHighlightFromSupabase(); 
             updateTimestamp(); 
         };
 
-        // Memuat highlight text dari Supabase
+        // Muat Highlight
         async function loadHighlightFromSupabase() {
             try {
                 const { data, error } = await supabaseClient
@@ -544,11 +546,11 @@
                     highlightDisplay.innerHTML = data.highlight_text.replace(/\n/g, '<br>');
                 }
             } catch (err) {
-                console.error("Gagal memuat highlight dari Supabase:", err.message);
+                console.error("Gagal memuat highlight:", err.message);
             }
         }
 
-        // Menyimpan highlight text ke Supabase
+        // Simpan Highlight
         async function saveHighlightToSupabase(text) {
             try {
                 const { error } = await supabaseClient
@@ -557,35 +559,27 @@
 
                 if (error) throw error;
             } catch (err) {
-                console.error("Gagal menyimpan highlight ke Supabase:", err.message);
+                console.error("Gagal menyimpan highlight:", err.message);
+                alert("Gagal simpan highlight! Cek aturan RLS di Supabase. Error: " + err.message);
             }
         }
 
-        // Update highlight text on button click
+        // Proses Highlight saat klik tombol
         document.getElementById('updateHighlightButton').addEventListener('click', async function() {
             const highlightText = highlightInput.value;
             highlightDisplay.innerHTML = highlightText.replace(/\n/g, '<br>'); 
             highlightInput.value = ''; 
-
-            const inputRect = highlightInput.getBoundingClientRect();
-            highlightDisplay.style.left = `${inputRect.left}px`;
-            highlightDisplay.style.top = `${inputRect.bottom + window.scrollY}px`; 
-
             await saveHighlightToSupabase(highlightText); 
             updateTimestamp(); 
         });
 
-        // Add event listener for Enter key press
+        // Proses Highlight saat Enter ditekan (menghindari line break baru jika langsung kirim)
         highlightInput.addEventListener('keypress', async function(event) {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.shiftKey) { // Gunakan Shift+Enter untuk enter baru, Enter untuk submit
+                event.preventDefault(); // Mencegah enter membuat baris baru sebelum disubmit
                 const highlightText = highlightInput.value;
                 highlightDisplay.innerHTML = highlightText.replace(/\n/g, '<br>'); 
                 highlightInput.value = ''; 
-
-                const inputRect = highlightInput.getBoundingClientRect();
-                highlightDisplay.style.left = `${inputRect.left}px`;
-                highlightDisplay.style.top = `${inputRect.bottom + window.scrollY}px`; 
-
                 await saveHighlightToSupabase(highlightText); 
                 updateTimestamp();
             }
