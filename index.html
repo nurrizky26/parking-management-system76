@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aircraft Parking System</title>
-    <link rel="icon" type="image/png" href="nccfavicon.png">
+    <link rel="icon" type="image/png" href="favicon-32x32.png">
     <style>
         body {
             margin: 0;
@@ -177,10 +177,11 @@
             z-index: 20;
         }
 
-        .text-element {
+       .text-element {
             position: absolute;
             font-weight: 800;
-            font-size: clamp(9px, 1vw, 13px);
+            /* DIUBAH: Ukuran teks registrasi pesawat diperkecil (min 7px, max 10px) */
+            font-size: clamp(7px, 0.8vw, 10px);
             color: #000;            
             text-align: center;
             text-transform: uppercase;
