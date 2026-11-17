@@ -222,6 +222,148 @@
             width: 100%;
             letter-spacing: 0.5px;
         }
+
+        /* --- TOOLTIP INFO PESAWAT (HOVER) --- */
+        .aircraft-tooltip {
+            display: none;
+            position: fixed;
+            background-color: rgba(20, 25, 30, 0.95);
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 11px;
+            z-index: 200;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            text-shadow: none;
+            min-width: 165px;
+        }
+
+        .aircraft-tooltip-title {
+            font-weight: bold;
+            border-bottom: 1px solid #444;
+            padding-bottom: 4px;
+            margin-bottom: 5px;
+            color: #f39c12;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .aircraft-tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 3px;
+        }
+
+        .aircraft-tooltip-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-installed {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .status-not-installed {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        /* --- POPUP MODAL FORM INFO PESAWAT --- */
+        .info-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.65);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .info-modal-overlay.visible {
+            display: flex;
+        }
+
+        .info-modal {
+            background-color: #1e242b;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 18px;
+            width: 280px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+            text-shadow: none;
+        }
+
+        .info-modal h3 {
+            margin: 0 0 14px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #f39c12;
+            border-bottom: 1px solid #3a424d;
+            padding-bottom: 8px;
+            text-align: center;
+        }
+
+        .info-form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .info-form-group select {
+            background-color: #2c3540;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 5px 8px;
+            font-size: 11px;
+            font-weight: bold;
+            width: 145px;
+            cursor: pointer;
+        }
+
+        .info-modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .info-modal-actions button {
+            flex: 1;
+            padding: 7px 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-save-info {
+            background-color: #27ae60;
+        }
+        .btn-save-info:hover {
+            background-color: #219150;
+        }
+
+        .btn-delete-info {
+            background-color: #c0392b;
+        }
+        .btn-delete-info:hover {
+            background-color: #a93226;
+        }
+
+        .btn-cancel-info {
+            background-color: #7f8c8d;
+        }
+        .btn-cancel-info:hover {
+            background-color: #6c7a7b;
+        }
     </style>
 </head>
 <body>
@@ -230,6 +372,49 @@
     </div>
 
     <div class="images-container" id="imagesContainer"></div>
+
+    <!-- Tooltip Hover Info Pesawat -->
+    <div class="aircraft-tooltip" id="aircraftTooltip"></div>
+
+    <!-- Pop-up Modal Form Info Pesawat -->
+    <div class="info-modal-overlay" id="infoModalOverlay">
+        <div class="info-modal">
+            <h3 id="infoModalTitle">Aircraft Component Info</h3>
+            <div class="info-form-group">
+                <label for="selectEng1">ENG#1</label>
+                <select id="selectEng1">
+                    <option value="INSTALLED">INSTALLED</option>
+                    <option value="NOT INSTALLED">NOT INSTALLED</option>
+                </select>
+            </div>
+            <div class="info-form-group">
+                <label for="selectEng2">ENG#2</label>
+                <select id="selectEng2">
+                    <option value="INSTALLED">INSTALLED</option>
+                    <option value="NOT INSTALLED">NOT INSTALLED</option>
+                </select>
+            </div>
+            <div class="info-form-group">
+                <label for="selectApu">APU</label>
+                <select id="selectApu">
+                    <option value="INSTALLED">INSTALLED</option>
+                    <option value="NOT INSTALLED">NOT INSTALLED</option>
+                </select>
+            </div>
+            <div class="info-form-group">
+                <label for="selectLg">L/G</label>
+                <select id="selectLg">
+                    <option value="INSTALLED">INSTALLED</option>
+                    <option value="NOT INSTALLED">NOT INSTALLED</option>
+                </select>
+            </div>
+            <div class="info-modal-actions">
+                <button type="button" class="btn-save-info" id="btnSaveInfo">Save</button>
+                <button type="button" class="btn-delete-info" id="btnDeleteInfo">Erase</button>
+                <button type="button" class="btn-cancel-info" id="btnCancelInfo">Batal</button>
+            </div>
+        </div>
+    </div>
 
     <div class="timeupdate">
         <div class="timestamp" id="timestamp">Last Update: -</div>
@@ -271,6 +456,19 @@
         const toggleButtons = document.getElementById('toggleButtons');
         const statusIndicator = document.getElementById('statusIndicator');
         const buttonContainer = document.getElementById('buttonContainer');
+
+        // ELEMEN TOOLTIP & MODAL INFO
+        const aircraftTooltip = document.getElementById('aircraftTooltip');
+        const infoModalOverlay = document.getElementById('infoModalOverlay');
+        const infoModalTitle = document.getElementById('infoModalTitle');
+        const selectEng1 = document.getElementById('selectEng1');
+        const selectEng2 = document.getElementById('selectEng2');
+        const selectApu = document.getElementById('selectApu');
+        const selectLg = document.getElementById('selectLg');
+        const btnSaveInfo = document.getElementById('btnSaveInfo');
+        const btnDeleteInfo = document.getElementById('btnDeleteInfo');
+        const btnCancelInfo = document.getElementById('btnCancelInfo');
+        let activeInfoImage = null;
         
         let eraserMode = false;
         
@@ -289,6 +487,7 @@
                 statusIndicator.textContent = "Mode: Terkunci (Hanya Lihat)";
                 statusIndicator.style.backgroundColor = "#7f8c8d";
                 buttonContainer.classList.remove('visible');
+                infoModalOverlay.classList.remove('visible');
                 if (eraserMode) toggleEraser(); // Matikan mode hapus jika sedang aktif
                 updateEditableClasses(); // Hapus efek hover/cursor
             } else {
@@ -337,7 +536,8 @@
                     left: img.style.left, 
                     top: img.style.top,   
                     text: img.textElement ? img.textElement.textContent : '', 
-                    rotation: img.rotation || 0 
+                    rotation: img.rotation || 0,
+                    info: img.aircraftInfo || null
                 }));
                 await supabaseClient.from('parking_state').upsert({ id: 1, layout_data: state });
             } catch (err) {
@@ -366,8 +566,10 @@
 
                         img.rotation = loadedRotation;
                         img.style.setProperty('--rot', `${loadedRotation}deg`);
+                        img.aircraftInfo = item.info || null;
                         
                         makeDraggable(img);
+                        attachInfoHover(img);
                         container.appendChild(img);
                         addedImages.push(img);
                         if (item.text) addTextOverImage(item.text, img);
@@ -376,6 +578,114 @@
                 }
             } catch (err) {}
         }
+
+        // --- LOGIKA TOOLTIP HOVER INFO PESAWAT ---
+        function attachInfoHover(img) {
+            img.addEventListener('mouseenter', function(e) {
+                if (!img.aircraftInfo) return;
+                const info = img.aircraftInfo;
+                const regTitle = img.textElement && img.textElement.textContent.trim() !== ''
+                    ? `INFO: ${img.textElement.textContent}`
+                    : 'AIRCRAFT INFO';
+
+                const formatStatus = (val) => val === 'INSTALLED'
+                    ? `<span class="status-installed">INSTALLED</span>`
+                    : `<span class="status-not-installed">NOT INSTALLED</span>`;
+
+                aircraftTooltip.innerHTML = `
+                    <div class="aircraft-tooltip-title">${regTitle}</div>
+                    <div class="aircraft-tooltip-row"><span>ENG#1:</span> ${formatStatus(info.eng1)}</div>
+                    <div class="aircraft-tooltip-row"><span>ENG#2:</span> ${formatStatus(info.eng2)}</div>
+                    <div class="aircraft-tooltip-row"><span>APU:</span> ${formatStatus(info.apu)}</div>
+                    <div class="aircraft-tooltip-row"><span>L/G:</span> ${formatStatus(info.lg)}</div>
+                `;
+                aircraftTooltip.style.display = 'block';
+                positionTooltip(e);
+            });
+
+            img.addEventListener('mousemove', function(e) {
+                if (aircraftTooltip.style.display === 'block') {
+                    positionTooltip(e);
+                }
+            });
+
+            img.addEventListener('mouseleave', function() {
+                aircraftTooltip.style.display = 'none';
+            });
+        }
+
+        function positionTooltip(e) {
+            const offset = 14;
+            let left = e.clientX + offset;
+            let top = e.clientY + offset;
+
+            const rect = aircraftTooltip.getBoundingClientRect();
+            if (left + rect.width > window.innerWidth) {
+                left = e.clientX - rect.width - offset;
+            }
+            if (top + rect.height > window.innerHeight) {
+                top = e.clientY - rect.height - offset;
+            }
+
+            aircraftTooltip.style.left = `${left}px`;
+            aircraftTooltip.style.top = `${top}px`;
+        }
+
+        // --- LOGIKA POPUP MODAL EDIT / ADD / ERASE INFO PESAWAT ---
+        function openInfoModal(img) {
+            if (!isEditAllowed) return;
+            activeInfoImage = img;
+            aircraftTooltip.style.display = 'none';
+
+            const regTitle = img.textElement && img.textElement.textContent.trim() !== ''
+                ? `Info Pesawat (${img.textElement.textContent})`
+                : 'Info Pesawat';
+            infoModalTitle.textContent = regTitle;
+
+            if (img.aircraftInfo) {
+                selectEng1.value = img.aircraftInfo.eng1 || 'INSTALLED';
+                selectEng2.value = img.aircraftInfo.eng2 || 'INSTALLED';
+                selectApu.value = img.aircraftInfo.apu || 'INSTALLED';
+                selectLg.value = img.aircraftInfo.lg || 'INSTALLED';
+                btnDeleteInfo.style.display = 'inline-block';
+            } else {
+                selectEng1.value = 'INSTALLED';
+                selectEng2.value = 'INSTALLED';
+                selectApu.value = 'INSTALLED';
+                selectLg.value = 'INSTALLED';
+                btnDeleteInfo.style.display = 'none';
+            }
+
+            infoModalOverlay.classList.add('visible');
+        }
+
+        btnSaveInfo.addEventListener('click', async function() {
+            if (!activeInfoImage) return;
+            activeInfoImage.aircraftInfo = {
+                eng1: selectEng1.value,
+                eng2: selectEng2.value,
+                apu: selectApu.value,
+                lg: selectLg.value
+            };
+            infoModalOverlay.classList.remove('visible');
+            activeInfoImage = null;
+            await saveToSupabase();
+            updateTimestamp();
+        });
+
+        btnDeleteInfo.addEventListener('click', async function() {
+            if (!activeInfoImage) return;
+            activeInfoImage.aircraftInfo = null;
+            infoModalOverlay.classList.remove('visible');
+            activeInfoImage = null;
+            await saveToSupabase();
+            updateTimestamp();
+        });
+
+        btnCancelInfo.addEventListener('click', function() {
+            infoModalOverlay.classList.remove('visible');
+            activeInfoImage = null;
+        });
 
         toggleButtons.addEventListener('click', function() {
             buttonContainer.classList.toggle('visible');
@@ -391,8 +701,10 @@
             img.style.top = `50%`;
             img.rotation = 0;
             img.style.setProperty('--rot', '0deg');
+            img.aircraftInfo = null;
             
             makeDraggable(img);
+            attachInfoHover(img);
             container.appendChild(img);
             addedImages.push(img);
 
@@ -471,7 +783,7 @@
             if (eraserMode) {
                 statusIndicator.textContent = "Mode: Hapus (Klik Pesawat)";
                 statusIndicator.style.backgroundColor = "#c0392b";
-                document.body.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z'></path><line x1='18' y1='9' x2='12' y2='15'></line><line x1='12' y1='9' x2='18' y2='15'></line></svg>") 12 12, not-allowed`;
+                document.body.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z'></path><line x1='18' y1='9' x2='12' y2='15'></line><line x1='12' y1='9' x2='18' y2='15'></line></svg>") 12 12, not-allowed`;
             } else {
                 statusIndicator.textContent = "Mode: Normal / Edit";
                 statusIndicator.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
@@ -480,6 +792,8 @@
         }
 
         function makeDraggable(element) {
+            let clickTimer = null;
+
             element.onmousedown = function(e) {
                 if (!isEditAllowed) return; // PROTEKSI GESER PESAWAT
 
@@ -490,6 +804,7 @@
                         container.removeChild(element);
                         const index = addedImages.indexOf(element);
                         if (index > -1) addedImages.splice(index, 1);
+                        aircraftTooltip.style.display = 'none';
                         updateTimestamp(); 
                         saveToSupabase(); 
                     }
@@ -497,6 +812,10 @@
                 }
 
                 e.preventDefault();
+                const startX = e.clientX;
+                const startY = e.clientY;
+                let hasMoved = false;
+
                 element.style.zIndex = '100';
                 if(element.textElement) element.textElement.style.zIndex = '101';
                 
@@ -505,6 +824,11 @@
                     
                     let x = e.clientX;
                     let y = e.clientY;
+
+                    if (Math.abs(x - startX) > 3 || Math.abs(y - startY) > 3) {
+                        hasMoved = true;
+                        aircraftTooltip.style.display = 'none';
+                    }
 
                     x = Math.max(0, Math.min(x, window.innerWidth));
                     y = Math.max(0, Math.min(y, window.innerHeight));
@@ -526,17 +850,33 @@
                     document.onmousemove = null;
                     element.style.zIndex = '10';
                     if(element.textElement) element.textElement.style.zIndex = '15';
-                    await saveToSupabase(); 
-                    updateTimestamp(); 
+
+                    if (hasMoved) {
+                        await saveToSupabase(); 
+                        updateTimestamp(); 
+                    } else {
+                        // Bedakan klik sekali (popup info) dan klik dua kali cepat (rotasi)
+                        if (clickTimer === null) {
+                            clickTimer = setTimeout(function() {
+                                clickTimer = null;
+                                openInfoModal(element);
+                            }, 250);
+                        }
+                    }
                 }
 
                 document.onmousemove = moveImage;
                 document.onmouseup = stopDragging;
             };
 
-            // PROTEKSI PUTAR PESAWAT
+            // PROTEKSI PUTAR PESAWAT (KLIK DUA KALI CEPAT)
             element.ondblclick = async function() {
                 if (!isEditAllowed) return; 
+
+                if (clickTimer !== null) {
+                    clearTimeout(clickTimer);
+                    clickTimer = null;
+                }
 
                 let currentRotation = element.rotation || 0; 
                 currentRotation += 90; 
