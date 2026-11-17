@@ -223,41 +223,41 @@
             letter-spacing: 0.5px;
         }
 
-        /* --- TOOLTIP INFO PESAWAT (HOVER) --- */
+        /* --- TOOLTIP INFO PESAWAT SAAT DISOROT --- */
         .aircraft-tooltip {
             display: none;
             position: fixed;
             background-color: rgba(20, 25, 30, 0.95);
             color: #fff;
-            border: 1px solid #555;
-            border-radius: 6px;
             padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #3498db;
             font-size: 11px;
-            z-index: 200;
+            z-index: 300;
             pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-            text-shadow: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
             min-width: 165px;
+            text-shadow: none;
         }
 
         .aircraft-tooltip-title {
             font-weight: bold;
+            color: #f39c12;
             border-bottom: 1px solid #444;
             padding-bottom: 4px;
             margin-bottom: 5px;
-            color: #f39c12;
-            font-size: 11px;
-            text-transform: uppercase;
+            text-align: center;
+            font-size: 12px;
         }
 
-        .aircraft-tooltip-row {
+        .tooltip-row {
             display: flex;
             justify-content: space-between;
             gap: 12px;
             margin-bottom: 3px;
         }
 
-        .aircraft-tooltip-row:last-child {
+        .tooltip-row:last-child {
             margin-bottom: 0;
         }
 
@@ -275,35 +275,31 @@
         .info-modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.65);
-            z-index: 300;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 400;
             align-items: center;
             justify-content: center;
         }
 
-        .info-modal-overlay.visible {
-            display: flex;
-        }
-
-        .info-modal {
-            background-color: #1e242b;
+        .info-modal-box {
+            background: #1e242b;
             border: 1px solid #444;
             border-radius: 8px;
             padding: 18px;
             width: 280px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.7);
             text-shadow: none;
         }
 
-        .info-modal h3 {
-            margin: 0 0 14px 0;
+        .info-modal-box h3 {
+            margin: 0 0 12px 0;
             font-size: 14px;
-            text-transform: uppercase;
-            color: #f39c12;
-            border-bottom: 1px solid #3a424d;
-            padding-bottom: 8px;
             text-align: center;
+            color: #f39c12;
+            border-bottom: 1px solid #444;
+            padding-bottom: 8px;
+            text-transform: uppercase;
         }
 
         .info-form-group {
@@ -316,13 +312,12 @@
         }
 
         .info-form-group select {
-            background-color: #2c3540;
+            background: #2c353f;
             color: white;
             border: 1px solid #555;
-            border-radius: 4px;
             padding: 5px 8px;
+            border-radius: 4px;
             font-size: 11px;
-            font-weight: bold;
             width: 145px;
             cursor: pointer;
         }
@@ -330,40 +325,26 @@
         .info-modal-actions {
             display: flex;
             gap: 8px;
-            margin-top: 16px;
+            margin-top: 15px;
         }
 
         .info-modal-actions button {
             flex: 1;
-            padding: 7px 10px;
+            padding: 7px;
             border: none;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             color: white;
         }
 
-        .btn-save-info {
-            background-color: #27ae60;
-        }
-        .btn-save-info:hover {
-            background-color: #219150;
-        }
-
-        .btn-delete-info {
-            background-color: #c0392b;
-        }
-        .btn-delete-info:hover {
-            background-color: #a93226;
-        }
-
-        .btn-cancel-info {
-            background-color: #7f8c8d;
-        }
-        .btn-cancel-info:hover {
-            background-color: #6c7a7b;
-        }
+        .btn-save-info { background-color: #27ae60; }
+        .btn-save-info:hover { background-color: #219150; }
+        .btn-delete-info { background-color: #e74c3c; }
+        .btn-delete-info:hover { background-color: #c0392b; }
+        .btn-cancel-info { background-color: #7f8c8d; }
+        .btn-cancel-info:hover { background-color: #6c7a7b; }
     </style>
 </head>
 <body>
@@ -373,16 +354,17 @@
 
     <div class="images-container" id="imagesContainer"></div>
 
-    <!-- Tooltip Hover Info Pesawat -->
+    <!-- TOOLTIP HOVER INFO -->
     <div class="aircraft-tooltip" id="aircraftTooltip"></div>
 
-    <!-- Pop-up Modal Form Info Pesawat -->
+    <!-- POPUP MODAL FORM INFO -->
     <div class="info-modal-overlay" id="infoModalOverlay">
-        <div class="info-modal">
+        <div class="info-modal-box">
             <h3 id="infoModalTitle">Aircraft Component Info</h3>
             <div class="info-form-group">
                 <label for="selectEng1">ENG#1</label>
                 <select id="selectEng1">
+                    <option value="">-- Kosong --</option>
                     <option value="INSTALLED">INSTALLED</option>
                     <option value="NOT INSTALLED">NOT INSTALLED</option>
                 </select>
@@ -390,6 +372,7 @@
             <div class="info-form-group">
                 <label for="selectEng2">ENG#2</label>
                 <select id="selectEng2">
+                    <option value="">-- Kosong --</option>
                     <option value="INSTALLED">INSTALLED</option>
                     <option value="NOT INSTALLED">NOT INSTALLED</option>
                 </select>
@@ -397,6 +380,7 @@
             <div class="info-form-group">
                 <label for="selectApu">APU</label>
                 <select id="selectApu">
+                    <option value="">-- Kosong --</option>
                     <option value="INSTALLED">INSTALLED</option>
                     <option value="NOT INSTALLED">NOT INSTALLED</option>
                 </select>
@@ -404,14 +388,15 @@
             <div class="info-form-group">
                 <label for="selectLg">L/G</label>
                 <select id="selectLg">
+                    <option value="">-- Kosong --</option>
                     <option value="INSTALLED">INSTALLED</option>
                     <option value="NOT INSTALLED">NOT INSTALLED</option>
                 </select>
             </div>
             <div class="info-modal-actions">
-                <button type="button" class="btn-save-info" id="btnSaveInfo">Save</button>
-                <button type="button" class="btn-delete-info" id="btnDeleteInfo">Erase</button>
-                <button type="button" class="btn-cancel-info" id="btnCancelInfo">Batal</button>
+                <button type="button" class="btn-save-info" id="saveInfoBtn">Save</button>
+                <button type="button" class="btn-delete-info" id="deleteInfoBtn">Delete</button>
+                <button type="button" class="btn-cancel-info" id="cancelInfoBtn">Cancel</button>
             </div>
         </div>
     </div>
@@ -456,25 +441,23 @@
         const toggleButtons = document.getElementById('toggleButtons');
         const statusIndicator = document.getElementById('statusIndicator');
         const buttonContainer = document.getElementById('buttonContainer');
-
-        // ELEMEN TOOLTIP & MODAL INFO
         const aircraftTooltip = document.getElementById('aircraftTooltip');
         const infoModalOverlay = document.getElementById('infoModalOverlay');
-        const infoModalTitle = document.getElementById('infoModalTitle');
-        const selectEng1 = document.getElementById('selectEng1');
-        const selectEng2 = document.getElementById('selectEng2');
-        const selectApu = document.getElementById('selectApu');
-        const selectLg = document.getElementById('selectLg');
-        const btnSaveInfo = document.getElementById('btnSaveInfo');
-        const btnDeleteInfo = document.getElementById('btnDeleteInfo');
-        const btnCancelInfo = document.getElementById('btnCancelInfo');
-        let activeInfoImage = null;
         
         let eraserMode = false;
+        let activeInfoTarget = null;
+        let clickTimeout = null;
         
         // SISTEM PASSWORD & LOCK
         const EDIT_PASSWORD = "papagolda76";
         let isEditAllowed = false; // Default: Terkunci
+
+        const NON_AIRCRAFT_SRCS = ['jacking.png', 'taildock.png', 'fuselagedock.png', 'bothdock.png'];
+
+        function isAircraftImage(src) {
+            const filename = src.substring(src.lastIndexOf('/') + 1);
+            return !NON_AIRCRAFT_SRCS.includes(filename);
+        }
 
         // Logika Kunci/Buka
         lockUnlockBtn.addEventListener('click', function() {
@@ -487,7 +470,7 @@
                 statusIndicator.textContent = "Mode: Terkunci (Hanya Lihat)";
                 statusIndicator.style.backgroundColor = "#7f8c8d";
                 buttonContainer.classList.remove('visible');
-                infoModalOverlay.classList.remove('visible');
+                infoModalOverlay.style.display = 'none';
                 if (eraserMode) toggleEraser(); // Matikan mode hapus jika sedang aktif
                 updateEditableClasses(); // Hapus efek hover/cursor
             } else {
@@ -579,25 +562,32 @@
             } catch (err) {}
         }
 
-        // --- LOGIKA TOOLTIP HOVER INFO PESAWAT ---
+        // --- HOVER TOOLTIP LOGIC ---
         function attachInfoHover(img) {
+            if (!isAircraftImage(img.src)) return;
+
             img.addEventListener('mouseenter', function(e) {
                 if (!img.aircraftInfo) return;
                 const info = img.aircraftInfo;
-                const regTitle = img.textElement && img.textElement.textContent.trim() !== ''
-                    ? `INFO: ${img.textElement.textContent}`
+                const hasAnyData = info.eng1 || info.eng2 || info.apu || info.lg;
+                if (!hasAnyData) return;
+
+                const regTitle = img.textElement && img.textElement.textContent.trim() !== '' 
+                    ? img.textElement.textContent.trim() 
                     : 'AIRCRAFT INFO';
 
-                const formatStatus = (val) => val === 'INSTALLED'
-                    ? `<span class="status-installed">INSTALLED</span>`
-                    : `<span class="status-not-installed">NOT INSTALLED</span>`;
+                const formatStatus = (val) => {
+                    if (!val) return '<span>-</span>';
+                    const cls = val === 'INSTALLED' ? 'status-installed' : 'status-not-installed';
+                    return `<span class="${cls}">${val}</span>`;
+                };
 
                 aircraftTooltip.innerHTML = `
                     <div class="aircraft-tooltip-title">${regTitle}</div>
-                    <div class="aircraft-tooltip-row"><span>ENG#1:</span> ${formatStatus(info.eng1)}</div>
-                    <div class="aircraft-tooltip-row"><span>ENG#2:</span> ${formatStatus(info.eng2)}</div>
-                    <div class="aircraft-tooltip-row"><span>APU:</span> ${formatStatus(info.apu)}</div>
-                    <div class="aircraft-tooltip-row"><span>L/G:</span> ${formatStatus(info.lg)}</div>
+                    <div class="tooltip-row"><span>ENG#1:</span> ${formatStatus(info.eng1)}</div>
+                    <div class="tooltip-row"><span>ENG#2:</span> ${formatStatus(info.eng2)}</div>
+                    <div class="tooltip-row"><span>APU:</span> ${formatStatus(info.apu)}</div>
+                    <div class="tooltip-row"><span>L/G:</span> ${formatStatus(info.lg)}</div>
                 `;
                 aircraftTooltip.style.display = 'block';
                 positionTooltip(e);
@@ -615,7 +605,7 @@
         }
 
         function positionTooltip(e) {
-            const offset = 14;
+            const offset = 15;
             let left = e.clientX + offset;
             let top = e.clientY + offset;
 
@@ -631,60 +621,59 @@
             aircraftTooltip.style.top = `${top}px`;
         }
 
-        // --- LOGIKA POPUP MODAL EDIT / ADD / ERASE INFO PESAWAT ---
+        // --- POPUP MODAL FORM LOGIC ---
         function openInfoModal(img) {
-            if (!isEditAllowed) return;
-            activeInfoImage = img;
+            if (!isEditAllowed || !isAircraftImage(img.src)) return;
+            activeInfoTarget = img;
+
+            const regName = img.textElement && img.textElement.textContent.trim() !== '' 
+                ? `Info (${img.textElement.textContent.trim()})` 
+                : 'Aircraft Component Info';
+            document.getElementById('infoModalTitle').textContent = regName;
+
+            const info = img.aircraftInfo || { eng1: '', eng2: '', apu: '', lg: '' };
+            document.getElementById('selectEng1').value = info.eng1 || '';
+            document.getElementById('selectEng2').value = info.eng2 || '';
+            document.getElementById('selectApu').value = info.apu || '';
+            document.getElementById('selectLg').value = info.lg || '';
+
             aircraftTooltip.style.display = 'none';
-
-            const regTitle = img.textElement && img.textElement.textContent.trim() !== ''
-                ? `Info Pesawat (${img.textElement.textContent})`
-                : 'Info Pesawat';
-            infoModalTitle.textContent = regTitle;
-
-            if (img.aircraftInfo) {
-                selectEng1.value = img.aircraftInfo.eng1 || 'INSTALLED';
-                selectEng2.value = img.aircraftInfo.eng2 || 'INSTALLED';
-                selectApu.value = img.aircraftInfo.apu || 'INSTALLED';
-                selectLg.value = img.aircraftInfo.lg || 'INSTALLED';
-                btnDeleteInfo.style.display = 'inline-block';
-            } else {
-                selectEng1.value = 'INSTALLED';
-                selectEng2.value = 'INSTALLED';
-                selectApu.value = 'INSTALLED';
-                selectLg.value = 'INSTALLED';
-                btnDeleteInfo.style.display = 'none';
-            }
-
-            infoModalOverlay.classList.add('visible');
+            infoModalOverlay.style.display = 'flex';
         }
 
-        btnSaveInfo.addEventListener('click', async function() {
-            if (!activeInfoImage) return;
-            activeInfoImage.aircraftInfo = {
-                eng1: selectEng1.value,
-                eng2: selectEng2.value,
-                apu: selectApu.value,
-                lg: selectLg.value
-            };
-            infoModalOverlay.classList.remove('visible');
-            activeInfoImage = null;
+        document.getElementById('saveInfoBtn').addEventListener('click', async function() {
+            if (!activeInfoTarget) return;
+
+            const eng1 = document.getElementById('selectEng1').value;
+            const eng2 = document.getElementById('selectEng2').value;
+            const apu = document.getElementById('selectApu').value;
+            const lg = document.getElementById('selectLg').value;
+
+            if (!eng1 && !eng2 && !apu && !lg) {
+                activeInfoTarget.aircraftInfo = null;
+            } else {
+                activeInfoTarget.aircraftInfo = { eng1, eng2, apu, lg };
+            }
+
+            infoModalOverlay.style.display = 'none';
+            activeInfoTarget = null;
             await saveToSupabase();
             updateTimestamp();
         });
 
-        btnDeleteInfo.addEventListener('click', async function() {
-            if (!activeInfoImage) return;
-            activeInfoImage.aircraftInfo = null;
-            infoModalOverlay.classList.remove('visible');
-            activeInfoImage = null;
+        document.getElementById('deleteInfoBtn').addEventListener('click', async function() {
+            if (!activeInfoTarget) return;
+
+            activeInfoTarget.aircraftInfo = null;
+            infoModalOverlay.style.display = 'none';
+            activeInfoTarget = null;
             await saveToSupabase();
             updateTimestamp();
         });
 
-        btnCancelInfo.addEventListener('click', function() {
-            infoModalOverlay.classList.remove('visible');
-            activeInfoImage = null;
+        document.getElementById('cancelInfoBtn').addEventListener('click', function() {
+            infoModalOverlay.style.display = 'none';
+            activeInfoTarget = null;
         });
 
         toggleButtons.addEventListener('click', function() {
@@ -708,7 +697,7 @@
             container.appendChild(img);
             addedImages.push(img);
 
-            if (!['jacking.png', 'taildock.png', 'fuselagedock.png', 'bothdock.png'].includes(src)) {
+            if (!NON_AIRCRAFT_SRCS.includes(src)) {
                 const textInput = document.createElement('input');
                 textInput.type = 'text';
                 textInput.placeholder = 'REG';
@@ -792,7 +781,7 @@
         }
 
         function makeDraggable(element) {
-            let clickTimer = null;
+            let hasDragged = false;
 
             element.onmousedown = function(e) {
                 if (!isEditAllowed) return; // PROTEKSI GESER PESAWAT
@@ -812,9 +801,9 @@
                 }
 
                 e.preventDefault();
+                hasDragged = false;
                 const startX = e.clientX;
                 const startY = e.clientY;
-                let hasMoved = false;
 
                 element.style.zIndex = '100';
                 if(element.textElement) element.textElement.style.zIndex = '101';
@@ -822,13 +811,13 @@
                 function moveImage(e) {
                     e.preventDefault();
                     
-                    let x = e.clientX;
-                    let y = e.clientY;
-
-                    if (Math.abs(x - startX) > 3 || Math.abs(y - startY) > 3) {
-                        hasMoved = true;
+                    if (Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3) {
+                        hasDragged = true;
                         aircraftTooltip.style.display = 'none';
                     }
+
+                    let x = e.clientX;
+                    let y = e.clientY;
 
                     x = Math.max(0, Math.min(x, window.innerWidth));
                     y = Math.max(0, Math.min(y, window.innerHeight));
@@ -850,18 +839,9 @@
                     document.onmousemove = null;
                     element.style.zIndex = '10';
                     if(element.textElement) element.textElement.style.zIndex = '15';
-
-                    if (hasMoved) {
+                    if (hasDragged) {
                         await saveToSupabase(); 
                         updateTimestamp(); 
-                    } else {
-                        // Bedakan klik sekali (popup info) dan klik dua kali cepat (rotasi)
-                        if (clickTimer === null) {
-                            clickTimer = setTimeout(function() {
-                                clickTimer = null;
-                                openInfoModal(element);
-                            }, 250);
-                        }
                     }
                 }
 
@@ -869,13 +849,25 @@
                 document.onmouseup = stopDragging;
             };
 
+            // KLIK SEKALI UNTUK POPUP INFO (DENGAN DELAY AGAR TIDAK BENTROK DENGAN DBLCLICK)
+            element.onclick = function() {
+                if (!isEditAllowed || eraserMode || hasDragged) return;
+                if (!isAircraftImage(element.src)) return;
+
+                if (clickTimeout) clearTimeout(clickTimeout);
+                clickTimeout = setTimeout(() => {
+                    clickTimeout = null;
+                    openInfoModal(element);
+                }, 250);
+            };
+
             // PROTEKSI PUTAR PESAWAT (KLIK DUA KALI CEPAT)
             element.ondblclick = async function() {
                 if (!isEditAllowed) return; 
 
-                if (clickTimer !== null) {
-                    clearTimeout(clickTimer);
-                    clickTimer = null;
+                if (clickTimeout) {
+                    clearTimeout(clickTimeout);
+                    clickTimeout = null;
                 }
 
                 let currentRotation = element.rotation || 0; 
