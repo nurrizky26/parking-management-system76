@@ -33,6 +33,9 @@
             top: 0;
             left: 0;
             z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .header h2 {
@@ -40,6 +43,143 @@
             font-size: 18px;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        /* --- TOMBOL HAMBURGER GARIS TIGA DI KANAN ATAS --- */
+        .hamburger-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 5px 7px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 60;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .hamburger-btn:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: #f39c12;
+        }
+
+        .hamburger-btn span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background-color: #ffffff;
+            border-radius: 2px;
+        }
+
+        /* --- DROPDOWN MENU TAB --- */
+        .nav-dropdown {
+            display: none;
+            position: absolute;
+            top: 44px;
+            right: 15px;
+            background-color: rgba(20, 25, 30, 0.96);
+            border: 1px solid #444;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7);
+            z-index: 250;
+            min-width: 210px;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .nav-dropdown.open {
+            display: flex;
+        }
+
+        .nav-tab-item {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #333;
+            color: #ecf0f1;
+            padding: 11px 15px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            text-shadow: none;
+        }
+
+        .nav-tab-item:last-child {
+            border-bottom: none;
+        }
+
+        .nav-tab-item:hover {
+            background-color: rgba(52, 152, 219, 0.25);
+            color: #fff;
+        }
+
+        .nav-tab-item.active {
+            background-color: #e67e22;
+            color: #fff;
+        }
+
+        /* --- LAYAR KONTEN TAB --- */
+        .tab-view {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .maintenance-screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(15, 20, 25, 0.92);
+            z-index: 40;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .maintenance-box {
+            background-color: #1e242b;
+            border: 1px solid #444;
+            border-top: 4px solid #f39c12;
+            border-radius: 8px;
+            padding: 28px 36px;
+            max-width: 420px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            text-shadow: none;
+        }
+
+        .maintenance-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .maintenance-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: #f39c12;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .maintenance-box p {
+            margin: 0;
+            font-size: 13px;
+            color: #bdc3c7;
+            line-height: 1.5;
         }
 
         .images-container {
@@ -349,86 +489,170 @@
 </head>
 <body>
     <div class="header">
-        <h2>Aircraft Parking Management</h2>
-    </div>
+        <h2 id="headerTitle">Aircraft Parking Management</h2>
+        
+        <!-- TOMBOL GARIS TIGA DI KANAN ATAS -->
+        <button class="hamburger-btn" id="hamburgerBtn" title="Menu Tampilan">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
 
-    <div class="images-container" id="imagesContainer"></div>
-
-    <!-- TOOLTIP HOVER INFO -->
-    <div class="aircraft-tooltip" id="aircraftTooltip"></div>
-
-    <!-- POPUP MODAL FORM INFO -->
-    <div class="info-modal-overlay" id="infoModalOverlay">
-        <div class="info-modal-box">
-            <h3 id="infoModalTitle">Aircraft Component Info</h3>
-            <div class="info-form-group">
-                <label for="selectEng1">ENG#1</label>
-                <select id="selectEng1">
-                    <option value="">-- Kosong --</option>
-                    <option value="INSTALLED">INSTALLED</option>
-                    <option value="NOT INSTALLED">NOT INSTALLED</option>
-                </select>
-            </div>
-            <div class="info-form-group">
-                <label for="selectEng2">ENG#2</label>
-                <select id="selectEng2">
-                    <option value="">-- Kosong --</option>
-                    <option value="INSTALLED">INSTALLED</option>
-                    <option value="NOT INSTALLED">NOT INSTALLED</option>
-                </select>
-            </div>
-            <div class="info-form-group">
-                <label for="selectApu">APU</label>
-                <select id="selectApu">
-                    <option value="">-- Kosong --</option>
-                    <option value="INSTALLED">INSTALLED</option>
-                    <option value="NOT INSTALLED">NOT INSTALLED</option>
-                </select>
-            </div>
-            <div class="info-form-group">
-                <label for="selectLg">L/G</label>
-                <select id="selectLg">
-                    <option value="">-- Kosong --</option>
-                    <option value="INSTALLED">INSTALLED</option>
-                    <option value="NOT INSTALLED">NOT INSTALLED</option>
-                </select>
-            </div>
-            <div class="info-modal-actions">
-                <button type="button" class="btn-save-info" id="saveInfoBtn">Save</button>
-                <button type="button" class="btn-delete-info" id="deleteInfoBtn">Delete</button>
-                <button type="button" class="btn-cancel-info" id="cancelInfoBtn">Cancel</button>
-            </div>
+        <!-- MENU DROPDOWN TAB -->
+        <div class="nav-dropdown" id="navDropdown">
+            <button class="nav-tab-item active" data-tab="parking">AIRCARAFT PARKING</button>
+            <button class="nav-tab-item" data-tab="wip">WIP DASHBOARD TJ</button>
+            <button class="nav-tab-item" data-tab="project">ON GOING PROJECT</button>
         </div>
     </div>
 
-    <div class="timeupdate">
-        <div class="timestamp" id="timestamp">Last Update: -</div>
-    </div>    
+    <!-- TAB 1: AIRCARAFT PARKING (KONTEN UTAMA ASLI) -->
+    <div id="tab-parking" class="tab-view">
+        <div class="images-container" id="imagesContainer"></div>
 
-    <div class="status-indicator" id="statusIndicator">Mode: Terkunci (Hanya Lihat)</div>    
+        <!-- TOOLTIP HOVER INFO -->
+        <div class="aircraft-tooltip" id="aircraftTooltip"></div>
 
-    <div class="control-panel">
-        <button class="main-button" id="toggleButtons" title="Tambah Pesawat">+</button>        
-        <button class="main-button" id="lockUnlockBtn" title="Buka Kunci Edit">🔒</button>        
-
-        <div class="button-container" id="buttonContainer">
-            <button class="image-button" onclick="addImage('ga.png')">GA</button>
-            <button class="image-button" onclick="addImage('qg.png')">QG</button>
-            <button class="image-button" onclick="addImage('nga.png')">NGA</button>
-            <button class="image-button" onclick="addImage('military.png')">MIL</button>
-            <button class="image-button" onclick="addImage('jacking.png')">Jack</button>
-            <button class="image-button" onclick="addImage('taildock.png')">Tail</button>
-            <button class="image-button" onclick="addImage('fuselagedock.png')">Fuse</button>
-            <button class="image-button" onclick="addImage('bothdock.png')">Both</button>
-            <button class="image-button eraser-button" id="eraserButton" onclick="toggleEraser()">🗑️ Erase Mode</button>
+        <!-- POPUP MODAL FORM INFO -->
+        <div class="info-modal-overlay" id="infoModalOverlay">
+            <div class="info-modal-box">
+                <h3 id="infoModalTitle">Aircraft Component Info</h3>
+                <div class="info-form-group">
+                    <label for="selectEng1">ENG#1</label>
+                    <select id="selectEng1">
+                        <option value="">-- Kosong --</option>
+                        <option value="INSTALLED">INSTALLED</option>
+                        <option value="NOT INSTALLED">NOT INSTALLED</option>
+                    </select>
+                </div>
+                <div class="info-form-group">
+                    <label for="selectEng2">ENG#2</label>
+                    <select id="selectEng2">
+                        <option value="">-- Kosong --</option>
+                        <option value="INSTALLED">INSTALLED</option>
+                        <option value="NOT INSTALLED">NOT INSTALLED</option>
+                    </select>
+                </div>
+                <div class="info-form-group">
+                    <label for="selectApu">APU</label>
+                    <select id="selectApu">
+                        <option value="">-- Kosong --</option>
+                        <option value="INSTALLED">INSTALLED</option>
+                        <option value="NOT INSTALLED">NOT INSTALLED</option>
+                    </select>
+                </div>
+                <div class="info-form-group">
+                    <label for="selectLg">L/G</label>
+                    <select id="selectLg">
+                        <option value="">-- Kosong --</option>
+                        <option value="INSTALLED">INSTALLED</option>
+                        <option value="NOT INSTALLED">NOT INSTALLED</option>
+                    </select>
+                </div>
+                <div class="info-modal-actions">
+                    <button type="button" class="btn-save-info" id="saveInfoBtn">Save</button>
+                    <button type="button" class="btn-delete-info" id="deleteInfoBtn">Delete</button>
+                    <button type="button" class="btn-cancel-info" id="cancelInfoBtn">Cancel</button>
+                </div>
+            </div>
         </div>
-    </div>    
 
-    <div class="footer-note">
-        *AFTER PARKING UPDATE, SLIDE THE AIRCRAFT SLIGHTLY AND THEN RETURN IT TO ITS ORIGINAL POSITION TO ACTIVATE STORAGE UPDATE
+        <div class="timeupdate">
+            <div class="timestamp" id="timestamp">Last Update: -</div>
+        </div>    
+
+        <div class="status-indicator" id="statusIndicator">Mode: Terkunci (Hanya Lihat)</div>    
+
+        <div class="control-panel">
+            <button class="main-button" id="toggleButtons" title="Tambah Pesawat">+</button>        
+            <button class="main-button" id="lockUnlockBtn" title="Buka Kunci Edit">🔒</button>        
+
+            <div class="button-container" id="buttonContainer">
+                <button class="image-button" onclick="addImage('ga.png')">GA</button>
+                <button class="image-button" onclick="addImage('qg.png')">QG</button>
+                <button class="image-button" onclick="addImage('nga.png')">NGA</button>
+                <button class="image-button" onclick="addImage('military.png')">MIL</button>
+                <button class="image-button" onclick="addImage('jacking.png')">Jack</button>
+                <button class="image-button" onclick="addImage('taildock.png')">Tail</button>
+                <button class="image-button" onclick="addImage('fuselagedock.png')">Fuse</button>
+                <button class="image-button" onclick="addImage('bothdock.png')">Both</button>
+                <button class="image-button eraser-button" id="eraserButton" onclick="toggleEraser()">🗑️ Erase Mode</button>
+            </div>
+        </div>    
+
+        <div class="footer-note">
+            *AFTER PARKING UPDATE, SLIDE THE AIRCRAFT SLIGHTLY AND THEN RETURN IT TO ITS ORIGINAL POSITION TO ACTIVATE STORAGE UPDATE
+        </div>
+    </div>
+
+    <!-- TAB 2: WIP DASHBOARD TJ -->
+    <div id="tab-wip" class="maintenance-screen">
+        <div class="maintenance-box">
+            <div class="maintenance-icon">🛠️</div>
+            <h3>WIP DASHBOARD TJ</h3>
+            <p>Halaman ini sedang dalam perbaikan untuk sementara waktu.</p>
+        </div>
+    </div>
+
+    <!-- TAB 3: ON GOING PROJECT -->
+    <div id="tab-project" class="maintenance-screen">
+        <div class="maintenance-box">
+            <div class="maintenance-icon">🚧</div>
+            <h3>ON GOING PROJECT</h3>
+            <p>Halaman ini sedang dalam perbaikan untuk sementara waktu.</p>
+        </div>
     </div>
 
     <script>
+        // --- LOGIKA MENU TAB (HAMBURGER KANAN ATAS) ---
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const navDropdown = document.getElementById('navDropdown');
+        const navTabItems = document.querySelectorAll('.nav-tab-item');
+        const headerTitle = document.getElementById('headerTitle');
+
+        const tabViews = {
+            parking: document.getElementById('tab-parking'),
+            wip: document.getElementById('tab-wip'),
+            project: document.getElementById('tab-project')
+        };
+
+        const tabTitles = {
+            parking: 'Aircraft Parking Management',
+            wip: 'WIP Dashboard TJ',
+            project: 'On Going Project'
+        };
+
+        hamburgerBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            navDropdown.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!navDropdown.contains(e.target) && e.target !== hamburgerBtn) {
+                navDropdown.classList.remove('open');
+            }
+        });
+
+        navTabItems.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const selectedTab = this.getAttribute('data-tab');
+
+                navTabItems.forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+
+                Object.keys(tabViews).forEach(key => {
+                    if (key === selectedTab) {
+                        tabViews[key].style.display = key === 'parking' ? 'block' : 'flex';
+                    } else {
+                        tabViews[key].style.display = 'none';
+                    }
+                });
+
+                headerTitle.textContent = tabTitles[selectedTab];
+                navDropdown.classList.remove('open');
+            });
+        });
+
         // INISIALISASI SUPABASE
         const SUPABASE_URL = "https://vmhxqjaphzpmyeszvlao.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_aXbq9WihrfTM968QFScX7w_V1m-LGZb";
